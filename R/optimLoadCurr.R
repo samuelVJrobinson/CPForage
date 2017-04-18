@@ -20,7 +20,7 @@ optimLoadCurr=function(u,nests,world){
                c_i=sapply(nests[!emptyNest],function(x) x$c_i),
                c_f=sapply(nests[!emptyNest],function(x) x$c_f),
                whatCurr_i=sapply(nests[!emptyNest],function(x) x$whatCurr),
-               mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens*cellSize^2),
+               mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens[u]*cellSize^2),
                patchLev=world$patchLev)
   if(sum(sapply(arglist,is.na))>0) { #If anything in the argument list is NA, returns NA values
     #Nest-specific numbers are named after corresponding nest
