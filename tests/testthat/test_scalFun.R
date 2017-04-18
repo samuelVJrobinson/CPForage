@@ -1,4 +1,4 @@
-context('Scaling function')
+context('Scaling function (scalFun)')
 
 test_that("scalFun is between 0 and 1",{
   params=list(mu=0.3/3600,

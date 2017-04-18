@@ -19,30 +19,30 @@ params=list(L_i=59.5,
 
 test_that('Summed currency works properly',{
   #Efficiency, using flower-level competition
-  expect_equal(round(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,Spatch=F)),4),166.8337)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=F)),166.8337,tol=1e-4)
   #Netrate, using flower-level competition
-  expect_equal(round(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,Spatch=F)),4),2.0684)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=F)),2.0684,tol=1e-4)
   #Efficiency, using patch-level competition
-  expect_equal(round(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,Spatch=T)),4),201.1507)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=T)),201.1507,tol=1e-4)
   #Netrate, using patch-level competition
-  expect_equal(round(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,Spatch=T)),4),2.5347)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),2.5347,tol=1e-4)
   #Netrate, using patch-level competition, with 2 nests
-  expect_equal(round(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,300),v_i,beta_i,H_i,
-                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,Spatch=T)),4),4.6995)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,300),v_i,beta_i,H_i,
+                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),4.6995,tol=1e-4)
 
 })
 
 test_that('Individual currency and S-values work properly',{
   #Efficiency with 1 nest
   expect_equal(length(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                       c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,Spatch=F))),2)
+                                       c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,patchLev=F))),2)
   #Efficiency and rate with 2 nests
   expect_equal(length(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,200),v_i,beta_i,H_i,
-                                       c_i,c_f,mu,l,e,NumFls,whatCurr_i=c('eff','rat'),sumAll=F,Spatch=F))),3)
+                                       c_i,c_f,mu,l,e,NumFls,whatCurr_i=c('eff','rat'),sumAll=F,patchLev=F))),3)
 })
 
 
