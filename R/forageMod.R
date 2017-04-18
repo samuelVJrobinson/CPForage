@@ -39,20 +39,23 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
       #Cuts off anything step size above maxN, making maxN the largest possible step
       nests[[i]]$steps=c(floor(maxN),nests[[i]]$steps[nests[[i]]$steps<maxN])
       nests[[i]]$steps=sort(unique(nests[[i]]$steps),T) #Descending unique values only
-      rm(maxN,max_e,max_nu,alphaTemp,cpTemp) #Cleanup
+      rm(maxN) #Cleanup
     }
     nests[[i]]$stepNum=1 #Starting point for the steps
   }
 
   if(parallel){
-    if(verbose) print('Loading parallel processing libraries...')
-    #require(foreach)
-    require(doSNOW)#Parallel processing
+    if(verbose) cat('Loading parallel processing libraries...')
+    require(doSNOW) #Parallel processing
     cluster=makeCluster(4, type = "SOCK") #Set up clusters for parallel processing (4 cores)
     registerDoSNOW(cluster) #Registers clusters
+    .Last <- function(){ #"Emergency" function for closing clusters upon unexpected stop
+      stopCluster(cluster) #Stops SOCK clusters
+      cat("forageMod stopped unexpectedly. Closing clusters.")
+    }
   } else cluster=NA
 
-  if(verbose) print('Initializing nests...')
+  if(verbose) cat('Initializing nests...')
   for(i in 1:length(nests)){ #Calculates initial loading rate, load size, and currency for each nest
     #Calculates currency for each cell for each nest
     occupied=nests[[i]]$n>0
@@ -161,7 +164,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
         #Currency intake in Current and -TRANSFER situation
         diff1=nests[[i]]$curr*nests[[i]]$n-worstNests[[i]]$curr*worstNests[[i]]$n
         #Location of cell with the least effect of subtracting TRANSFER foragers - Worst cell
-        worst=which(ifelse(nests[[i]]$n>transfer-1,diff1,NA)==min(ifelse(nests[[i]]$n>transfer-1,diff1,NA),na.rm=T),arr.ind=T)
+        worst=which(ifelse(nests[[i]]$n>transfer-1,diff1,NA)==min(ifelse(nests[[i]]$n>transfer-1,diff1,NA),na.rm=T),
+                    arr.ind=T)
         if(length(worst)>2) worst=worst[1,] #If there are more than 1 worst cells, choose the first
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[worst[1],worst[2]]=T
@@ -209,7 +213,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
           #Move TRANSFER foragers out of (and into) worst (and best) cells in WORSTNESTS
           worstNests[[i]]$n[best]=worstNests[[i]]$n[best]+transfer #Adds new foragers to best cell
           worstNests[[i]]$n[worst]=worstNests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
-          if(worstNests[[i]]$n[worst]==0 & sum(sapply(worstNests,function(x) x$n[worst]))==0){ #If worst cell is now empty...
+          #If worst cell is now empty...
+          if(worstNests[[i]]$n[worst]==0 & sum(sapply(worstNests,function(x) x$n[worst]))==0){
             worstNests[[i]]$L[worst]=worstNests[[i]]$curr[worst]=0 #Set Load and currency to 0
             worstWorld$S[worst]=1 #Set S to 1 (no competitors)
           } else {
