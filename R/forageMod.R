@@ -1,4 +1,3 @@
-#Version of forageMod with altered c_p and inter-patch foraging terms
 forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   #Internal functions
   if(verbose) print('Starting setup...')
@@ -9,10 +8,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   world$S[world$mu==0]=NA
 
   #TEMPORARY
-  tf=0.16
-  #Proportion increase in completely loaded cost of flight (5e-05 value from Schmid-Hempel et al 1985)
-  alpha=function(c_f,L_max,e_i) (c_f+L_max*e_i*5e-05)/c_f-1
-
+  tf=0.16 #Proportion of flight time in patch
   for(i in 1:length(nests)){ #For each nest, do set-up
     nests[[i]]=c(nests[[i]],nests[[i]]$constants)
     nests[[i]]$constants=NULL

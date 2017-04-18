@@ -2,9 +2,13 @@
 scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=NULL,p_i=NULL,f_i=NULL,d_i=NULL,v_i=NULL,beta_i=NULL,H_i=NULL,patchLev=F){
   #Argument checking
   singleArgs=list(mu=mu,l=l,NumFls=NumFls) #Patch arguments (mu,l,NumFls)
+  #If any arguments are missing, throw an error
+  if(any(is.na(singleArgs))|any(sapply(singleArgs,is.null))){
+    stop(cat(c('Patch arguments',names(singleArgs)[sapply(singleArgs, function(x) is.null(x)||is.na(x))],'missing')))
+  }
   singArgLen=sapply(singleArgs,length) #Length of patch arguments
   if(sum(singArgLen>1)>0){ #If patch arguments are longer than 1
-    stop(paste(names(singArgLen)[singArgLen>1],'longer than 1. Patch arguments must be a scalar.'))
+    stop(cat(names(singArgLen)[singArgLen>1],'longer than 1. Patch arguments must be a scalar.'))
   }
   if(singleArgs$mu==0|singleArgs$l==0|singleArgs$NumFls==0) return(NA) #If production is 0, competition isn't defined.
   #Forager (nest-level) arguments (Load,MaxLoad,number,Handling Time,Licking Rate,b/w flower flight time,distance,beta,hive time)
@@ -35,14 +39,17 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
   #Function for finding S by optimization
   usageS=function(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev){
     if(patchLev){ #Patch-level version
-      return(abs(usage(S,L_i,n_i,h_i,l,p_i,f_i,d_i,v_i,beta_i,L_max_i)-(mu*NumFls))) #Usage must = mu*NumFls
+      return(abs(usage(S=S,L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,patchLev=patchLev,
+                       f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-(mu*NumFls))) #Usage must = mu*NumFls
     } else { #Flower-level version
-      return(abs(usage(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i)-S*l)) #Mean nectar must = S*l
+      return(abs(usage(S=S,mu=mu,l=l,NumFls=NumFls,L_i=L_i,n_i=n_i,h_i=h_i,patchLev=patchLev,
+                       p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-S*l)) #Mean nectar must = S*l
     }
   }
   lmax=max(unique(argLen)) #Length of arguments (number of cells to process)
   if(patchLev){ #Patch-level S-value
-    maxUse=usage(1,L_i,n_i,h_i,l,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev) #Patch-level usage when S=1
+    maxUse=usage(S=1,L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,
+                 d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,patchLev=patchLev) #Patch-level usage when S=1
     if((mu*NumFls)>=maxUse){ #If patch production >= max usage
       return(1) #No competition
     } else { #If max usage > patch production
@@ -52,7 +59,7 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
         #Version from Maxima
         S=-(L_i*(L_max_i-beta_i*L_i)*(h_i+f_i)*(mu*NumFls)*v_i)/(l*(L_i*L_max_i*(mu*NumFls)*p_i*v_i-beta_i*L_i^2*(mu*NumFls)*p_i*v_i-L_i*L_max_i*n_i*v_i+beta_i*L_i^2*n_i*v_i+H_i*L_max_i*(mu*NumFls)*v_i-beta_i*H_i*L_i*(mu*NumFls)*v_i+2*L_max_i*d_i*(mu*NumFls)-beta_i*L_i*d_i*(mu*NumFls)))
       } else { #If there are multiple nests
-        S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu,NumFls=NumFls)$min #Finds S by optimization
+        S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu,NumFls=NumFls,patchLev=patchLev)$min #Finds S by optimization
       }
     }
   } else { #Flower-level S-value using Possingham 1988
@@ -86,7 +93,7 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
         L_i^2*NumFls*l*p_i+2*mu*H_i*L_i*NumFls*l)*v_i+2*mu*L_i*NumFls*d_i*l)*beta_i+(-2*mu*L_i*L_max_i*NumFls*l*p_i-2*
         mu*H_i*L_max_i*NumFls*l)*v_i-4*mu*L_max_i*NumFls*d_i*l)
     } else { #If there are multiple nests
-      S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu)$min #Find S by optimization
+      S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu,NumFls=NumFls,patchLev=patchLev)$min #Find S by optimization
     }
   }
   return(S)

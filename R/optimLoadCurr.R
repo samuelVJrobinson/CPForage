@@ -21,8 +21,7 @@ optimLoadCurr=function(u,nests,world){
                c_f=sapply(nests[!emptyNest],function(x) x$c_f),
                whatCurr_i=sapply(nests[!emptyNest],function(x) x$whatCurr),
                mu=world$mu[u],l=world$l[u],e=world$e[u])
-  #If anything in the argument list is NA, returns NA values
-  if(sum(sapply(arglist,is.na))>0) {
+  if(sum(sapply(arglist,is.na))>0) { #If anything in the argument list is NA, returns NA values
     #Nest-specific numbers are named after corresponding nest
     return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
                 #Currency for foraging in empty patches
