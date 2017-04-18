@@ -32,15 +32,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
       nests[[i]]$steps=sort(nests[[i]]$steps,T)
     } else { #Automatic determination of step size
       #Calculate max number of foragers to move during a single time step (avoiding "reflection" problem, where large number of foragers are assigned to far end of world simply because of depletion effect)
-      max_e=world$e[which.max(world$e*world$mu)] #e value of cell with maximum J/s
-      max_nu=world$mu[which.max(world$e*world$mu)] #nu value of cell with maximum J/s
-      alphaTemp=with(nests[[i]],alpha(c_f,L_max,max_e))
-      #Rate of loading loss (J/s) (Dukas and Edelstein Keshet 1998 use 0.025)
-      c_p=function(c_i,tf,c_f,alpha,L,L_max) (c_i*(1-tf))+(c_f*(1+alpha*(L/L_max)))
-      cpTemp=with(nests[[i]],c_p(c_i,tf,c_f,alphaTemp,L_max,L_max))
-      #Calculates largest possible number of foragers in richest patch of distance 0 before Rate goes to 0
-      #Note: at distance 0, it turns out that maxN for efficiency maximizers = maxN for rate maximizers
-      maxN=optimize(function(maxN) abs(with(nests[[i]],((L_max*max_e)-(L_max*max_e*cpTemp/(max_nu/maxN))-c_i*H)/((L_max*max_e/(max_nu/maxN))+H))),interval=c(0,1e10))$minimum*0.9 #Uses 90% of max step size as "starting point"
+      #NOTE: since implementation of scalFun, there is seems to be no "reflection" problem, so using 5% of nForagers as maxN
+      maxN=nforagers*0.05
       nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,0.5)))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end
       #Cuts off anything step size above maxN, making maxN the largest possible step
