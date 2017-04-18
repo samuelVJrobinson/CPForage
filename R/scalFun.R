@@ -4,11 +4,11 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
   singleArgs=list(mu=mu,l=l,NumFls=NumFls) #Patch arguments (mu,l,NumFls)
   #If any arguments are missing, throw an error
   if(any(is.na(singleArgs))|any(sapply(singleArgs,is.null))){
-    stop(cat(c('Patch arguments',names(singleArgs)[sapply(singleArgs, function(x) is.null(x)||is.na(x))],'missing')))
+    stop('Patch arguments ',names(singleArgs)[sapply(singleArgs, function(x) is.null(x)||is.na(x))],' missing')
   }
   singArgLen=sapply(singleArgs,length) #Length of patch arguments
   if(sum(singArgLen>1)>0){ #If patch arguments are longer than 1
-    stop(cat(names(singArgLen)[singArgLen>1],'longer than 1. Patch arguments must be a scalar.'))
+    stop(names(singArgLen)[singArgLen>1],'longer than 1. Patch arguments must be a scalar.')
   }
   if(singleArgs$mu==0|singleArgs$l==0|singleArgs$NumFls==0) return(NA) #If production is 0, competition isn't defined.
   #Forager (nest-level) arguments (Load,MaxLoad,number,Handling Time,Licking Rate,b/w flower flight time,distance,beta,hive time)
