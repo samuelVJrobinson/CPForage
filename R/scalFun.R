@@ -15,8 +15,9 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
   Args=list(L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i)
   argLen=sapply(Args,length) #Length of forager arguments
   argSign=sapply(c(singleArgs,Args),function(x) sum(x<0))>0 #Are any arguments less than 0?
-  if(sum(argSign)>0){ #If any arguments are <0
-    stop(c(singleArgs,Args)[argSign],'< 0')
+  if(any(argSign)){ #If any arguments are <0
+  # NOTE: THIS IS WORKING, BUT OPTIMIZE HAS BEEN SHOWN TO PROVIDE L-VALUES <0. REMOVE/MODIFY IF PROBLEM PERSISTS.
+  stop(names(c(singleArgs,Args))[argSign],'< 0')
   } else if((sum(argLen==0)+sum(singArgLen==0))>0) {#If there are any zero-length arguments (i.e. not provided)
     stop(paste(names(singArgLen)[singArgLen==0],names(argLen)[argLen==0],'arguments not provided'))
   } else if(length(unique(argLen))>2) { #If there are >2 lengths of argument
