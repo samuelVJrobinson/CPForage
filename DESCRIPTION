@@ -11,4 +11,4 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/samuelVJrobinson/CPForage
 BugReports: https://github.com/samuelVJrobinson/CPForage/issues
-Suggests: testthat
+Suggests: testthat, dplyr, doSNOW
