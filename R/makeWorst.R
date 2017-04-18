@@ -12,7 +12,7 @@ makeWorst=function(nests,world,whichNest=NA,parallel=F,cluster=NA) {
   occupied=do.call('+',lapply(nests, function(x) x$n>0))>0 #Cells with >0 foragers
   #Calculates S,L, and Curr values for every nest
   if(parallel){
-    temp=parLapply(c1=cluster,which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
+    temp=parLapply(cluster,which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
   } else {
     temp=lapply(which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
   }
