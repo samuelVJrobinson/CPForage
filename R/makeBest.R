@@ -10,7 +10,7 @@ makeBest=function(nests,world,whichNest=NA,parallel=F,cluster=NA){
     use=matrix(T,nrow=nrow(bestNests[[i]]$n),ncol=ncol(bestNests[[i]]$n)) #All cells
     #Calculates S,L, and Curr values for every nest
     if(parallel){
-      temp=parLapply(c1=cluster,which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
+      temp=parLapply(cluster,which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
     } else {
       temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
     }
