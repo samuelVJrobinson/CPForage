@@ -1,5 +1,5 @@
 #Efficiency = (Gains - Foraging Loss - Travel Loss - Hive Loss)/Loading Loss + Travel Loss + Hive Loss
-eff=function(L,L_max,e,d,v,h,l,p_i,c_i,c_f,H,S){
+efficiency=function(L,L_max,e,d,v,h,l,p_i,c_i,c_f,H,S){
   Gains=L*e
   FlightLoss=(d*c_f/v)*(2+alpha(c_f,L_max,e)*(L/L_max))
   #ForagingLoss=(L*(c_i*(h+S*l*p_i)+(c_f*alpha(c_f,L_max,e)/2*L_max)*(L+S*l)))/(S*l)#Old formula
