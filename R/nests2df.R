@@ -4,7 +4,6 @@ nests2df=function(nests){
   require(tidyr)
   convertNest=function(i,nes){
     nNests=bind_rows(data.frame(nes[[i]]$n,rows=0:(nrow(nes[[i]]$n)-1),category='numForagers'), #Occupancy
-                     data.frame(nes[[i]]$r,rows=0:(nrow(nes[[i]]$n)-1),category='loadRate'), #Loading rate
                      data.frame(nes[[i]]$L,rows=0:(nrow(nes[[i]]$n)-1),category='loadSize'), #Load size
                      data.frame(nes[[i]]$curr,rows=0:(nrow(nes[[i]]$n)-1),category='currency'), #Currency
                      data.frame(nes[[i]]$d,rows=0:(nrow(nes[[i]]$n)-1),category='distance'), #Distance to patch
