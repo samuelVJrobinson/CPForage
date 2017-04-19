@@ -8,7 +8,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   world$S[world$mu==0]=NA
 
   #TEMPORARY
-  tf=0.16 #Proportion of flight time in patch
   for(i in 1:length(nests)){ #For each nest, do set-up
     nests[[i]]=c(nests[[i]],nests[[i]]$constants)
     nests[[i]]$constants=NULL
@@ -51,7 +50,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
     registerDoSNOW(cluster) #Registers clusters
     .Last <- function(){ #"Emergency" function for closing clusters upon unexpected stop
       stopCluster(cluster) #Stops SOCK clusters
-      cat("forageMod stopped unexpectedly. Closing clusters.")
+      print("forageMod stopped unexpectedly. Closing clusters.")
     }
   } else cluster=NA
 
