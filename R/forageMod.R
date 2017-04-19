@@ -268,5 +268,5 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   }
   if(parallel) stopCluster(cluster) #Stops SOCK clusters
   if(verbose) print(paste('Simulation ended at',Sys.time(),'Final number of iterations = ',nitt,'.'))
-  return(nests) #Returns list
+  return(list(world=world,nests=nests)) #Returns world and nests in a list
 }
