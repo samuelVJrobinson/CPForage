@@ -26,6 +26,15 @@ test_that("scalFun is between 0 and 1",{
 
 test_that('scalFun error handling works',{
   #NA value for nectar production
-  expect_error(scalFun(mu=NA,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=100,
-                       h_i=h_i,p_i=p_i,f_i=f_i,d_i=c(d_i,200),v_i=v_i,beta_i=beta_i,H_i=H_i,patchLev=F))
+  expect_error(with(params,scalFun(mu=NA,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=100,
+                       h_i=h_i,p_i=p_i,f_i=f_i,d_i=c(d_i,200),v_i=v_i,beta_i=beta_i,H_i=H_i,patchLev=F)))
+
+  #scalFun "should" work for slightly negative L_i values (used by optimizer)
+  expect_equal(with(params,scalFun(mu=mu,l=l,NumFls=NumFls,L_i=-0.1,L_max_i=L_max_i,n_i=100,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i,patchLev=F)),1)
+
+  #However, it should not work for any other values being negative
+  expect_error(with(params,scalFun(mu=mu,l=l,NumFls=-100,L_i=L_i,L_max_i=L_max_i,n_i=100,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i,patchLev=F)))
+
+  expect_error(with(params,scalFun(mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=-100,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i,patchLev=F)))
+
 })
