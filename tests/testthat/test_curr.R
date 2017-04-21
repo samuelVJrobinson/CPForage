@@ -14,7 +14,7 @@ params=list(L_i=59.5,
             c_i=0.0042,
             mu=0.3/3600,
             l=1,
-            e=14,
+            e=14.35,
             NumFls=520*(10^2))
 
 test_that('Summed currency works properly',{
