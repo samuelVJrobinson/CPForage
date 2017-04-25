@@ -93,8 +93,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
 
         ###Figure out where worst and best cells are ###
 
-        worst=which(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA)==
-                      min(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA),na.rm=T),arr.ind=T) #Worst cell
+        worst=which(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA)==min(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA),na.rm=T),arr.ind=T) #Worst cell
         if(length(worst)>2) worst=worst[1,] #If there are more than 1 worst cells, choose the first
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[worst[1],worst[2]]=T
@@ -160,8 +159,12 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
       } else { #If optimization is being done for social foragers, colony rate/efficiency is maximized
 
         #Step 1: find cell to move foragers FROM
+
+        #THIS IS FAILING BECAUSE CURRENCY CALCULATIONS IN EMPTY CELLS RETURN -INF FOR RATE. -INF+INF = Nan
         #Currency intake in Current and -TRANSFER situation
         diff1=nests[[i]]$curr*nests[[i]]$n-worstNests[[i]]$curr*worstNests[[i]]$n
+        #Changes all NaNs to zero (in case of a -Inf+Inf situation, which arises when comparing foragers in a worthless cell versus fewer foragers in a worthless cell - summed currency difference b/w cells should still be 0)
+        diff1[is.nan(diff1)]=0
         #Location of cell with the least effect of subtracting TRANSFER foragers - Worst cell
         worst=which(ifelse(nests[[i]]$n>transfer-1,diff1,NA)==min(ifelse(nests[[i]]$n>transfer-1,diff1,NA),na.rm=T),
                     arr.ind=T)
@@ -181,6 +184,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[best[1],best[2]]=T
         best=use #Location of best cell
+
+        #THIS IS RETURNING MISSING ARGUMENTS, MEANING THAT CIRCUMSTANCES WHERE NO >TRANSFER CELLS WERE PASSED TO IT.
 
         #Step 3: Is the improvement caused by moving TRANSFER foragers >0?
         change=diff2[best]-diff1[worst] #Change in currency intake for the colony
