@@ -10,6 +10,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   }
   #INPUT CHECKING:
   for(i in 1:length(nests)){ #For each nest, check entry values
+    if(is.null(names(nests[i]))) names(nests[i])=paste('nest',i,sep='') #If nests are unnamed, provides a unique name
     if(any(!(names(nests[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
     }
