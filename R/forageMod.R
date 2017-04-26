@@ -94,14 +94,15 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
 
   if(verbose) cat('Initializing nests...')
 
-  #TO DO: THIS NEEDS TO BE MODIFIED SO THAT CORRECT L, CURR, S VALUES FROM TEMP ARE ASSIGNED IN THE PROPER NEST (IN MULTI-NEST SCENARIO). CHECK MAKEBEST, MAKEWORST, AND THE REST OF THE MAIN WHILE LOOP TO MAKE SURE THIS IS GOING ON PROPERLY THERE TOO.
   for(i in 1:length(nests)){ #Calculates initial loading rate, load size, and currency for each nest
     #Calculates currency for each cell for each nest
     occupied=nests[[i]]$n>0
     temp=optimLoadCurr(occupied,nests,world) #Optimizes Load and Rate for occupied cells in nest i
-    nests[[i]]$L[occupied]=temp$optimL
-    nests[[i]]$curr[occupied]=temp$optimCurr
-    world$S[occupied]=temp$S
+    world$S[occupied]=temp$S #S-value
+    for(name in names(temp$optimCurr)){
+      nests[[name]][['L']][occupied]=temp[['optimL']][[name]] #Assigns L
+      nests[[name]][['curr']][occupied]=temp[['optimCurr']][[name]] #Assigns currency
+    }
   }
 
   #worstNests: represents world -transfer foragers in each cell
@@ -112,7 +113,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
     worstWorld=temp$worstWorld
   }
 
-  #NOTE: CURRENTLY THIS WORKS ONLY FOR SINGLE-NEST SITUATION. SHOULD BE LOOPED OVER ALL COMBINATIONS OF 'MOVES' IN MULTI-NEST SITUATION. IT WOULD PROBABLY HELP IF WORLD + NESTS WAS GROUPED TOGETHER IN LISTS ('SCENARIOS')
+  #NOTE: CURRENTLY THIS WORKS ONLY FOR SINGLE-NEST SITUATION. SHOULD BE LOOPED OVER ALL COMBINATIONS OF 'MOVES' IN MULTI-NEST SITUATION. ALTERNATIVELY, IT COULD JUST USE MARGINAL SITUATION (WHAT MOVE | OTHERS), BUT THIS MAY LEAD TO STABLE OSCILLATIONS, OR TURN-BASED ADVANTAGES
+  #IT WOULD PROBABLY HELP IF WORLD + NESTS WAS GROUPED TOGETHER IN LISTS ('SCENARIOS').
   #bestNests: represents world +transfer foragers in each cell
   temp=makeBest(nests,world,whichNest=1,parallel=parallel,cluster=cluster)
   bestNests=temp$bestNests
@@ -312,6 +314,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
     nests[[i]]$boutLength=nests[[i]]$loadingTime+nests[[i]]$travelTime+nests[[i]]$H #Time for 1 complete foraging bout
   }
   if(parallel) stopCluster(cluster) #Stops SOCK clusters
-  if(verbose) print(paste('Simulation ended at',Sys.time(),'Final number of iterations = ',nitt,'.'))
+  if(verbose) print(paste('Simulation ended at',Sys.time(),'. Final number of iterations = ',nitt,'.',sep=''))
   return(list(world=world,nests=nests)) #Returns world and nests in a list
 }
