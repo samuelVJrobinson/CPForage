@@ -10,7 +10,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   }
   #INPUT CHECKING:
   for(i in 1:length(nests)){ #For each nest, check entry values
-    if(any(!(names(nests1[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
+    if(any(!(names(nests[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
     }
     stopifnot(is.numeric(nests[[i]]$xloc),nests[[i]]$xloc>0,decimalplaces(nests[[i]]$xloc)==0) #X-location
