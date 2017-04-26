@@ -1,8 +1,6 @@
 forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   #Internal functions
   if(verbose) print('Starting setup...')
-
-
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
     if ((x %% 1) != 0) {
       nchar(strsplit(sub('0+$', '', as.character(x)), ".", fixed=TRUE)[[1]][[2]])
@@ -10,8 +8,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
       return(0)
     }
   }
-
-  #ERROR HANDLING:
+  #INPUT CHECKING:
   for(i in 1:length(nests)){ #For each nest, check entry values
     if(any(!(names(nests1[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
@@ -104,6 +101,83 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
       nests[[name]][['curr']][occupied]=temp[['optimCurr']][[name]] #Assigns currency
     }
   }
+
+  #Idea:
+  #Create BASE scenario: list containing a world and set of nests-represents "current situation"
+
+  #Depending on competitive framework:
+
+  #SIMPLE CASE - 1 nest
+  #create 1 (or 2) extra scenarios for solitary (or social) foragers.
+  #Add TRANSFER foragers to 1st scenario, rerun optimLoadCurr to get S/L/currency values (similar to "bestNests")
+  #If nest is social:
+    #Subtract TRANSFER foragers to 2nd scenario, rerun optimLoadCurr to get S/L/currency values (similar to "worstNests")
+  #Compare currency values b/w 1st and BASE scenario (or 1st, BASE, and 2nd scenario)
+  #If currency change is better than EPS
+  #Change forager number in BEST and WORST cells in all 3 scenarios
+  #Run optimLoadCurr for candidate cells in all 3 scenarios
+  #Loop
+
+  #COMPLEX CASE - 2 or more nests - ignoring other nest behaviour
+  #Requires (n*2 + 1) sets of calculations for each iteration
+
+  #Create nests:
+  #for(i = nests)
+  #Create 1 (or 2) extra scenarios
+  #Scenario1 = Add TRANSFER foragers to i in BASE,  rerun optimLoadCurr
+  #If nest i is social:
+    #Scenario2 = Subtract TRANSFER foragers from i in BASE, rerun optimLoadCurr
+  #end
+
+  #Compare nests:
+  #for(i = nests)
+  #Compare singular currency values b/w 1st, (2nd) and BASE scenario
+  #end
+
+
+  #COMPLEX CASE - 2 or more nests - marginalizing across other nest behaviour
+  #Requires (n*3^(n-1)) sets of calculations for each iteration
+  #Create nests:
+  #for(i = nests)
+  #Create 2 (or 3) extra scenario SETS
+  #ScenarioSet0 = Use i in BASE
+  #= Create combination of ADD/ZERO(/SUBTRACT) TRANSFER for all other nests
+  #= Note: 1 of these scenarios can just be copied from BASE
+  #= Run all scenarios through optimLoadCurr
+  #ScenarioSet1 = Add TRANSFER foragers to i in BASE
+  #= Create combination of ADD/ZERO(/SUBTRACT) TRANSFER for all other nests
+  #= Run all scenarios through optimLoadCurr
+  #If nest i is social:
+    #Scenario2 = Subtract TRANSFER foragers from i in BASE
+    #= Create combination of ADD/ZERO(/SUBTRACT) TRANSFER for all other nests (requires 3^(n-1) scenarios for all combinations)
+    #= Run all scenarios through optimLoadCurr
+  #end
+
+  #Compare nests:
+  #for(i = nests)
+    #Compare multiple currency values b/w 'best', ('worst') and 'zero' scenarios.
+    #Fetch single value for each cell in the entire "stack" of scenarios. Options:
+      #Summed currencies
+      #Mean value of currencies
+      #Median value of currrencies
+      #Maximum currency (best-case scenario)
+      #Minimum currency (worst-case scenario)
+      #Other extensions: different functions for each scenario set? (e.g. maximum from 'zero', but minimum from 'best')
+    #For solitary: choose max(best), and min(zero) for best and worst cells
+    #For social: choose max(diff1), and min(diff2) for best and worst cells
+  #Etc...
+  #end
+
+  #REQUIREMENTS:
+  #1) Set up model to deal with scenario=list(world,nests)
+    #a) Modify optimLoadCurr to deal with & return scenarios
+    #b) Any other functions underneath optimLoadCurr?? (Don't think they need modification)
+  #2) Set up model preamble to deal with 'ignore' or 'marginalize' behaviour
+    #a) BASE scenario should be in environment
+    #b) If('ignore') each nest should have a list with 1 (or 2) scenarios, "best" (and "worst")
+    #c) If('marginalize') each nest should have a list with 1 (or 2) scenario SETS, "best", "zero" (and "worst").
+    #"best" should contain all scenarios
+
 
   #worstNests: represents world -transfer foragers in each cell
   #NOTE: CURRENTLY THIS WORKS ONLY FOR SINGLE-NEST SITUATION.
@@ -202,7 +276,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
 
         #Step 1: find cell to move foragers FROM
 
-        #THIS IS FAILING BECAUSE CURRENCY CALCULATIONS IN EMPTY CELLS RETURN -INF FOR RATE. -INF+INF = Nan
         #Currency intake in Current and -TRANSFER situation
         diff1=nests[[i]]$curr*nests[[i]]$n-worstNests[[i]]$curr*worstNests[[i]]$n
         #Changes all NaNs to zero (in case of a -Inf+Inf situation, which arises when comparing foragers in a worthless cell versus fewer foragers in a worthless cell - summed currency difference b/w cells should still be 0)
@@ -226,8 +299,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[best[1],best[2]]=T
         best=use #Location of best cell
-
-        #THIS IS RETURNING MISSING ARGUMENTS, MEANING THAT CIRCUMSTANCES WHERE NO >TRANSFER CELLS WERE PASSED TO IT.
 
         #Step 3: Is the improvement caused by moving TRANSFER foragers >0?
         change=diff2[best]-diff1[worst] #Change in currency intake for the colony
