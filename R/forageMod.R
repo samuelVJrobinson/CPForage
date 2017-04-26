@@ -93,6 +93,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   } else cluster=NA
 
   if(verbose) cat('Initializing nests...')
+
+  #TO DO: THIS NEEDS TO BE MODIFIED SO THAT CORRECT L, CURR, S VALUES FROM TEMP ARE ASSIGNED IN THE PROPER NEST (IN MULTI-NEST SCENARIO). CHECK MAKEBEST, MAKEWORST, AND THE REST OF THE MAIN WHILE LOOP TO MAKE SURE THIS IS GOING ON PROPERLY THERE TOO.
   for(i in 1:length(nests)){ #Calculates initial loading rate, load size, and currency for each nest
     #Calculates currency for each cell for each nest
     occupied=nests[[i]]$n>0
