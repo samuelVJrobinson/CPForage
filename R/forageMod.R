@@ -36,7 +36,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   }
   stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)), #Are matrices appropriate?
             !any(!sapply(world[c('mu','flDens','e','l','f')],is.numeric)),
-            !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)<0)))
+            !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)>=0)))
   stopifnot(length(unique(sapply(world[c('mu','flDens','e','l','f')],ncol)))==1, #Dimension checking
             length(unique(sapply(world[c('mu','flDens','e','l','f')],nrow)))==1)
   stopifnot(is.numeric(world$cellSize),world$cellSize>0,is.logical(world$patchLev))
