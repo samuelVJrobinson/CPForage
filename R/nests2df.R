@@ -21,7 +21,8 @@ nests2df=function(modelRun){
   nests=suppressWarnings(bind_rows(lapply(1:length(modelRun$nests),nes=modelRun$nests,convertNest)))
   world=data.frame(modelRun$world$S,rows=0:(nrow(modelRun$world$S)-1),category='S') %>%
     setNames(gsub('X','',names(.))) %>%
-    gather(cols,value,-rows:-category) %>%
-    spread(category,value)
+    gather(cols,S,-rows:-category) %>%
+    select(-category) %>%
+    mutate(cols=as.numeric(cols)-1)
   return(list(nests=nests,world=world))
 }
