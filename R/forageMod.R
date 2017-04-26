@@ -2,12 +2,50 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   #Internal functions
   if(verbose) print('Starting setup...')
 
+
+  decimalplaces <- function(x) { #Convenience function for finding number of decimal places
+    if ((x %% 1) != 0) {
+      nchar(strsplit(sub('0+$', '', as.character(x)), ".", fixed=TRUE)[[1]][[2]])
+    } else {
+      return(0)
+    }
+  }
+
+  #ERROR HANDLING:
+  for(i in 1:length(nests)){ #For each nest, check entry values
+    if(any(!(names(nests1[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
+      stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
+    }
+    stopifnot(is.numeric(nests[[i]]$xloc),nests[[i]]$xloc>0,decimalplaces(nests[[i]]$xloc)==0) #X-location
+    stopifnot(is.numeric(nests[[i]]$yloc),nests[[i]]$yloc>0,decimalplaces(nests[[i]]$yloc)==0) #Y-location
+    stopifnot(is.numeric(nests[[i]]$n),nests[[i]]$n>0,decimalplaces(nests[[i]]$n)==0) #Number of foragers
+    stopifnot(is.character(nests[[i]]$whatCurr),nests[[i]]$whatCurr=='eff'|nests[[i]]$whatCurr=='rat') #Currency
+    stopifnot(is.logical(nests[[i]]$sol)) #Solitary/social
+    stopifnot(is.list(nests[[i]]$constants)) #Forager constants
+    stopifnot(is.numeric(nests[[i]]$eps),nests[[i]]$eps>0) #Eps term
+    if(any(!(names(nests[[i]]$constants) %in% c("L_max","v","beta","p_i","h","c_f","c_i","H")))){
+      stop('Forager constants for each CPF nest require the following arguments:\n "L_max" "v" "beta" "p_i" "h" "c_f" "c_i" "H"')
+    }
+    if(any(sapply(nests[[i]]$constants,function(x) any(!c(is.numeric(x),x>0))))){
+      stop('Forager constants must be numeric, and >0')
+    }
+  }
+  #Check values for world
+  if(any(!(names(world) %in% c("mu","flDens","e","l","f","cellSize","patchLev")))){
+    stop('Each world requires the following arguments:\n "mu" "flDens" "e" "l" "f" "cellSize" "patchLev"')
+  }
+  stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)), #Are matrices appropriate?
+            !any(!sapply(world[c('mu','flDens','e','l','f')],is.numeric)),
+            !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)<0)))
+  stopifnot(length(unique(sapply(world[c('mu','flDens','e','l','f')],ncol)))==1, #Dimension checking
+            length(unique(sapply(world[c('mu','flDens','e','l','f')],nrow)))==1)
+  stopifnot(is.numeric(world$cellSize),world$cellSize>0,is.logical(world$patchLev))
+
   #SETUP
   #Add matrix of competition values to the world
   world$S=matrix(1,nrow=nrow(world$mu),ncol=ncol(world$mu))
   world$S[world$mu==0]=NA
 
-  #TEMPORARY
   for(i in 1:length(nests)){ #For each nest, do set-up
     nests[[i]]=c(nests[[i]],nests[[i]]$constants)
     nests[[i]]$constants=NULL
