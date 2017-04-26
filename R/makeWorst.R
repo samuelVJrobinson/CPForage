@@ -1,6 +1,7 @@
 #Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST
 makeWorst=function(nests,world,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
+  #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all)
   if(is.na(whichNest)) stop('Nest # not specified')
   worstNests=nests
   worstWorld=world
