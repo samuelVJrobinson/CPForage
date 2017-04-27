@@ -9,8 +9,21 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
     }
   }
   #INPUT CHECKING:
+  if(is.null(names(nests))){ #Checks for NULL or empty nest names
+    if(length(nests)==1) names(nests)='nest1' else names(nests)=paste(rep('nest',length(nests)),1:length(nests),sep='')
+    warning('Nests unnamed. Providing names.')
+  } else if(any(nchar(names(nests))==0)) {
+    #Provides a new name
+    names(nests)=ifelse(nchar(names(nests))==0,paste('nests',which(nchar(names(nests))==0),sep=''),names(nests))
+    warning('Some nests are unnamed. Providing name for unnamed nests.')
+  }
+  if(length(names(nests))>1 & any(duplicated(names(nests)))) {
+    names(nests)[duplicated(names(nests))]=
+      replicate(sum(duplicated(names(nests))),paste(cbind(sample(letters,8)),collapse=''))
+    warning('Duplicate nest names. Providing random names to duplicate nests.')
+  }
+
   for(i in 1:length(nests)){ #For each nest, check entry values
-    if(is.null(names(nests[i]))) names(nests[i])=paste('nest',i,sep='') #If nests are unnamed, provides a unique name
     if(any(!(names(nests[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
     }
