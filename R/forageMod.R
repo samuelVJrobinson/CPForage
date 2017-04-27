@@ -1,4 +1,4 @@
-forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
+forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
   #Internal functions
   if(verbose) print('Starting setup...')
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
@@ -26,8 +26,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   for(i in 1:length(nests)){ #For each nest, check entry values
     if(any(!(names(nests[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
-    }
     stopifnot(is.numeric(nests[[i]]$xloc),nests[[i]]$xloc>0,decimalplaces(nests[[i]]$xloc)==0) #X-location
+    }
     stopifnot(is.numeric(nests[[i]]$yloc),nests[[i]]$yloc>0,decimalplaces(nests[[i]]$yloc)==0) #Y-location
     stopifnot(is.numeric(nests[[i]]$n),nests[[i]]$n>0,decimalplaces(nests[[i]]$n)==0) #Number of foragers
     stopifnot(is.character(nests[[i]]$whatCurr),nests[[i]]$whatCurr=='eff'|nests[[i]]$whatCurr=='rat') #Currency
@@ -95,7 +95,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F){
   if(parallel){
     if(verbose) cat('Loading parallel processing libraries...')
     require(doSNOW) #Parallel processing
-    cluster=makeCluster(4, type = "SOCK") #Set up clusters for parallel processing (4 cores)
+    cluster=makeCluster(ncore, type = "SOCK") #Set up ncore number of clusters for parallel processing
     registerDoSNOW(cluster) #Registers clusters
     .Last <- function(){ #"Emergency" function for closing clusters upon unexpected stop
       stopCluster(cluster) #Stops SOCK clusters
