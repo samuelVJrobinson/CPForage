@@ -22,7 +22,8 @@ optimLoadCurr=function(u,nests,world){
                whatCurr_i=sapply(nests[!emptyNest],function(x) x$whatCurr),
                mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens[u]*cellSize^2),
                patchLev=world$patchLev)
-  if(any(sapply(arglist,function(x) any(is.na(x)))>0)) { #If anything in the argument list is NA, returns NA values
+  #If anything in the argument list is NA, returns NA values - indicates worthless patch
+  if(any(sapply(arglist,function(x) any(is.na(x)))>0)) {
     #Nest-specific numbers are named after corresponding nest
     return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
                 #Currency for foraging in empty patches
@@ -31,6 +32,7 @@ optimLoadCurr=function(u,nests,world){
   }
   startL=sapply(nests[!emptyNest],function(x) x$L[u]) #Starting vector for L-values
   startL[is.na(startL)]=0 #If there are any nests with NA L-values, sets L-value to zero (arglist already checked for NAs, so this means that the cell hasn't been used yet)
+  startL[startL!=0]=0 #TEMPORARY: ALWAYS USES 0 AS STARTING VALUE FOR LOAD
   #L values that produce highest sum of currency
   optimL=do.call(optim,c(list(par=startL,fn=curr,method='L-BFGS-B',lower=rep(0,length(startL)),
                               upper=sapply(nests[!emptyNest],function(x) x$L_max),control=list(fnscale=-1)),arglist))$par
