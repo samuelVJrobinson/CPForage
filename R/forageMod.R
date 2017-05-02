@@ -24,7 +24,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
   }
 
   for(i in 1:length(nests)){ #For each nest, check entry values
-    if(any(!(names(nests[[i]]) %in% c("xloc","yloc","n","whatCurr","sol","constants","eps")))){
+    if(any(!(c("xloc","yloc","n","whatCurr","sol","constants","eps") %in% names(nests[[i]])))){
       stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
     stopifnot(is.numeric(nests[[i]]$xloc),nests[[i]]$xloc>0,decimalplaces(nests[[i]]$xloc)==0) #X-location
     }
@@ -33,7 +33,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
     stopifnot(is.character(nests[[i]]$whatCurr),nests[[i]]$whatCurr=='eff'|nests[[i]]$whatCurr=='rat') #Currency
     stopifnot(is.logical(nests[[i]]$sol)) #Solitary/social
     stopifnot(is.list(nests[[i]]$constants)) #Forager constants
-    stopifnot(is.numeric(nests[[i]]$eps),nests[[i]]$eps>0) #Eps term
+    stopifnot(is.numeric(nests[[i]]$eps),nests[[i]]$eps>=0) #Eps term
     if(any(!(names(nests[[i]]$constants) %in% c("L_max","v","beta","p_i","h","c_f","c_i","H")))){
       stop('Forager constants for each CPF nest require the following arguments:\n "L_max" "v" "beta" "p_i" "h" "c_f" "c_i" "H"')
     }
@@ -80,14 +80,37 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
       nests[[i]]$steps=sort(nests[[i]]$steps,T)
     } else { #Automatic determination of step size
       #Calculate max number of foragers to move during a single time step (avoiding "reflection" problem, where large number of foragers are assigned to far end of world simply because of depletion effect)
-      #NOTE: since implementation of scalFun, there is seems to be no "reflection" problem, so using 5% of nForagers as maxN
-      maxN=nforagers*0.05
+
+      fakeNests=nests #Copy of nests
+      fakeNests[[i]]$n=0 #No foragers
+      fakeNests[[i]]$h=min(fakeNests[[i]]$h,na.rm=T) #minimum handling time
+      fakeNests[[i]]$d=min(fakeNests[[i]]$d[fakeNests[[i]]$d!=0],na.rm=T) #minimum nonzero distance
+      fakeNests[[i]]$L=fakeNests[[i]]$L_max #L_max
+      fakeNests[[i]]$curr=0
+      fakeWorld=world #Copy of world
+      richest=which.max(fakeWorld$mu*fakeWorld$flDens*fakeWorld$e)
+      fakeWorld$mu=fakeWorld$mu[richest] #Mu from richest patch
+      fakeWorld$flDens=fakeWorld$flDens[richest] #flDens from richest patch
+      fakeWorld$e=fakeWorld$e[richest] #e ...
+      fakeWorld$l=fakeWorld$l[richest] #l
+      fakeWorld$f=fakeWorld$f[richest] #f
+      fakeWorld$S=1 #No competition (initially)
+      #Function to return currency in a cell given n foragers
+      maxNfun=function(n,fakeNests,fakeWorld,i,eps){
+        fakeNests[[i]]$n=n
+        temp=optimLoadCurr(1,fakeNests,fakeWorld)
+        return(abs(unname(temp$optimCurr[i])-eps)) #Return absolute value of currency (for finding min)
+      }
+      #Number of foragers where currency goes to 0 (within range of 0.1)
+      maxn=optimize(maxNfun,interval=c(0,max(nests[[i]]$n)),fakeNests=fakeNests,
+                    fakeWorld=fakeWorld,i=i,eps=0.1)$min
+      #maxn=0.6*maxn #60% of maximum value (buffer zone)
       nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,0.5)))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end
       #Cuts off anything step size above maxN, making maxN the largest possible step
-      nests[[i]]$steps=c(floor(maxN),nests[[i]]$steps[nests[[i]]$steps<maxN])
+      nests[[i]]$steps=c(floor(maxn),nests[[i]]$steps[nests[[i]]$steps<maxn])
       nests[[i]]$steps=sort(unique(nests[[i]]$steps),T) #Descending unique values only
-      rm(maxN) #Cleanup
+      rm(maxn,maxNfun) #Cleanup
     }
     nests[[i]]$stepNum=1 #Starting point for the steps
   }
