@@ -1,4 +1,22 @@
+#'World with -TRANSFER less foragers
+#'
 #Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST
+#'
+#'@param nests Nest structure
+#'@param world World structure
+#'@param whichNest Which nest should have TRANSFER foragers taken away?
+#'@param parallel Should computation be done in parallel?
+#'@param cluster If parallel, which cluster should be used
+
+#'@return List of nests and world structure
+#'
+#'@examples
+#'#Parameters
+#'temp<-makeWorst(nests,world,1,T,cluster)
+#'temp$nests #Nests
+#'temp$world #World
+
+
 makeWorst=function(nests,world,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
   #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all)
@@ -10,7 +28,6 @@ makeWorst=function(nests,world,whichNest=NA,parallel=F,cluster=NA) {
     use=worstNests[[i]]$n>=transfer #Occupied cells with at least TRANSFER foragers in them
     worstNests[[i]]$n[use]=worstNests[[i]]$n[use]-transfer #Subtracts TRANSFER forager from every occupied cell
   }
-  occupied=do.call('+',lapply(nests, function(x) x$n>0))>0 #Cells with >0 foragers
   #Calculates S,L, and Curr values for every nest
   if(parallel){
     temp=parLapply(cluster,which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
