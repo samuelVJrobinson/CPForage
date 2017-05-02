@@ -223,7 +223,9 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
 
         ###Figure out where worst and best cells are ###
 
-        worst=which(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA)==min(ifelse(nests[[i]]$n>transfer-1,nests[[i]]$curr,NA),na.rm=T),arr.ind=T) #Worst cell
+        #Currency in cells where TRANSFER foragers can be subtracted
+        transferable=ifelse(nests[[i]]$n>=transfer,nests[[i]]$curr,NA)
+        worst=which(transferable==min(transferable,na.rm=T),arr.ind=T) #Worst transferable cell
         if(length(worst)>2) worst=worst[1,] #If there are more than 1 worst cells, choose the first
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[worst[1],worst[2]]=T
@@ -285,18 +287,19 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
           bestNests=temp$bestNests
           bestWorld=temp$bestWorld
         } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged
-        #SOCIAL FORAGERS
+
+      #SOCIAL FORAGERS
       } else { #If optimization is being done for social foragers, colony rate/efficiency is maximized
 
         #Step 1: find cell to move foragers FROM
-
         #Currency intake in Current and -TRANSFER situation
         diff1=nests[[i]]$curr*nests[[i]]$n-worstNests[[i]]$curr*worstNests[[i]]$n
         #Changes all NaNs to zero (in case of a -Inf+Inf situation, which arises when comparing foragers in a worthless cell versus fewer foragers in a worthless cell - summed currency difference b/w cells should still be 0)
         diff1[is.nan(diff1)]=0
-        #Location of cell with the least effect of subtracting TRANSFER foragers - Worst cell
-        worst=which(ifelse(nests[[i]]$n>transfer-1,diff1,NA)==min(ifelse(nests[[i]]$n>transfer-1,diff1,NA),na.rm=T),
-                    arr.ind=T)
+        #Currency difference in cells where TRANSFER foragers can be subtracted
+        transferable=ifelse(nests[[i]]$n>=transfer,diff1,NA)
+        #Location of cell with the least effect of subtracting TRANSFER foragers - Worst cell (best cell to move OUT of)
+        worst=which(transferable==min(transferable,na.rm=T),arr.ind=T)
         if(length(worst)>2) worst=worst[1,] #If there are more than 1 worst cells, choose the first
         use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
         use[worst[1],worst[2]]=T
@@ -330,6 +333,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
           #Move TRANSFER foragers out of (and into) worst (and best) cells in BESTNESTS
           bestNests[[i]]$n[best]=bestNests[[i]]$n[best]+transfer #Adds new foragers to best cell
           bestNests[[i]]$n[worst]=bestNests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
+
           #Calculate new optimal load and currency for worst and best cells in BESTNESTS
           use=worst|best #Location of worst and best cells
           temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
@@ -343,7 +347,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
 
           #Move TRANSFER foragers out of (and into) worst (and best) cells in WORSTNESTS
           worstNests[[i]]$n[best]=worstNests[[i]]$n[best]+transfer #Adds new foragers to best cell
-          worstNests[[i]]$n[worst]=worstNests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
+          #Subtracts foragers from worst cell - if <= transfer, sets foragers to 0 (won't be considered for further transfers)
+          worstNests[[i]]$n[worst]=ifelse(worstNests[[i]]$n[worst]<=transfer,0,worstNests[[i]]$n[worst]-transfer)
           #If worst cell is now empty...
           if(worstNests[[i]]$n[worst]==0 & sum(sapply(worstNests,function(x) x$n[worst]))==0){
             worstNests[[i]]$L[worst]=worstNests[[i]]$curr[worst]=0 #Set Load and currency to 0
@@ -365,7 +370,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
             worstNests[[name]][['L']][best]=temp[['optimL']][[name]] #Assigns L
             worstNests[[name]][['curr']][best]=temp[['optimCurr']][[name]] #Assigns currency
           }
-
         } else if(transfer>1) { #If transfer number is >1 (i.e. not at the end of the list)
           if(verbose) print(paste('Finished pass',nests[[i]]$stepNum,'of',length(nests[[i]]$steps),'for nest',i))
 
@@ -380,7 +384,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
           temp=makeWorst(nests,world,whichNest=i,parallel=parallel,cluster=cluster)
           worstNests=temp$worstNests
           worstWorld=temp$worstWorld
-
         } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged for this next
       } #End of IF(sol/soc)
     } #End of FOR loop
