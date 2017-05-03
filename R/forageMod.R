@@ -1,4 +1,4 @@
-forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4){
+forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Machine$double.eps^0.25){
   #Internal functions
   if(verbose) print('Starting setup...')
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
