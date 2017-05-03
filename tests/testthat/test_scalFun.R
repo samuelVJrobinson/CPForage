@@ -1,18 +1,19 @@
 context('Scaling function (scalFun)')
 
+params=list(mu=0.3/3600,
+            l=1,
+            NumFls=520*(10^2),
+            L_i=59.5,
+            L_max_i=59.5,
+            h_i=1.5,
+            f_i=0.86,
+            p_i=1,
+            d_i=100,
+            v_i=7.8,
+            beta_i=0.102,
+            H_i=100)
+
 test_that("scalFun is between 0 and 1",{
-  params=list(mu=0.3/3600,
-  l=1,
-  NumFls=520*(10^2),
-  L_i=59.5,
-  L_max_i=59.5,
-  h_i=1.5,
-  f_i=0.86,
-  p_i=1,
-  d_i=100,
-  v_i=7.8,
-  beta_i=0.102,
-  H_i=100)
 
   expect_equal(with(params,scalFun(mu,l,NumFls,L_i,L_max_i,n_i=100, #Patch-level
           h_i,p_i,f_i,d_i,v_i,beta_i,H_i,patchLev=T)),0.1183501,tol=1e-4)

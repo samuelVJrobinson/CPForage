@@ -20,19 +20,19 @@ params=list(L_i=59.5,
 test_that('Summed currency works properly',{
   #Efficiency, using flower-level competition
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=F)),166.8337,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=F)),168.9403,tol=1e-4)
   #Netrate, using flower-level competition
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=F)),2.0684,tol=1e-4)
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=F)),2.120286,tol=1e-4)
   #Efficiency, using patch-level competition
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=T)),201.1507,tol=1e-4)
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=T)),203.9737,tol=1e-4)
   #Netrate, using patch-level competition
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),2.5347,tol=1e-4)
+                                      c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),2.59821,tol=1e-4)
   #Netrate, using patch-level competition, with 2 nests
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,300),v_i,beta_i,H_i,
-                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),4.6995,tol=1e-4)
+                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,patchLev=T)),4.817451,tol=1e-4)
 
 })
 
