@@ -8,8 +8,6 @@ whichMoves=function(nests=NA,world=NA,i=NA,soc=NA){
     stop('World not specified')
   } else if(is.na(i)){
     stop('Which nest not specified')
-  } else if(is.na(soc)){
-
   }
 
 
