@@ -1,7 +1,8 @@
-#Function to calculate currency(-ies) in cell u of nests. Returns NA values if arguments to cells are NA.
-optimLoadCurr=function(u,nests,world){
+#Function to calculate currency(-ies) in cell u of nests in scenario. Returns NA values if arguments to cells are NA.
+optimLoadCurr=function(u,scenario){
   #Goal: Optimize a vector of L values to produce greatest summed currency in cell u
-
+  nests=scenario$nests #Unpacks scenario
+  world=scenario$world
   #If nest-level arguments are NA or missing, throw an error
   if(any(sapply(nests,function(x) any(lengths(x)==0|is.na(x))))){
     stop('Nest-level arguments are NA or length==0')
@@ -47,8 +48,6 @@ optimLoadCurr=function(u,nests,world){
                 'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
                 'S'=1)) #No competition in completely empty cells
   }
-
-
   startL=sapply(nests[!emptyNest],function(x) x$L[u]) #Starting vector for L-values
   startL[is.na(startL)]=0 #If there are any nests with NA L-values, sets L-value to zero (arglist already checked for NAs, so this means that the cell hasn't been used yet)
   startL[startL!=0]=0 #TEMPORARY: ALWAYS USES 0 AS STARTING VALUE FOR LOAD
