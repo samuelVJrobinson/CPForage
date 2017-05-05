@@ -2,47 +2,39 @@
 #'
 #Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST
 #'
-#'@param nests Nest structure
-#'@param world World structure
+#'@param scenario Nest structure and world structure (scenario)
 #'@param whichNest Which nest should have TRANSFER foragers taken away?
 #'@param parallel Should computation be done in parallel?
 #'@param cluster If parallel, which cluster should be used
 
-#'@return List of nests and world structure
+#'@return List of nests and world structure (scenario)
 #'
 #'@examples
-#'#Parameters
-#'temp<-makeWorst(nests,world,1,T,cluster)
-#'temp$nests #Nests
-#'temp$world #World
 
 
-makeWorst=function(nests,world,whichNest=NA,parallel=F,cluster=NA) {
+
+makeWorst=function(scenario,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
   #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all)
   if(is.na(whichNest)) stop('Nest # not specified')
-  worstNests=nests
-  worstWorld=world
+
   for(i in whichNest){ #Calculates load size and currency for each nest
-    transfer=worstNests[[i]]$steps[worstNests[[i]]$stepNum] #Number of foragers to remove
-    use=worstNests[[i]]$n>=transfer #Occupied cells with at least TRANSFER foragers in them
-    worstNests[[i]]$n[use]=worstNests[[i]]$n[use]-transfer #Subtracts TRANSFER forager from every occupied cell
+    transfer=scenario$nests[[i]]$steps[scenario$nests[[i]]$stepNum] #Number of foragers to remove
+    use=scenario$nests[[i]]$n>=transfer #Occupied cells with at least TRANSFER foragers in them
+    scenario$nests[[i]]$n[use]=scenario$nests[[i]]$n[use]-transfer #Subtracts TRANSFER forager from every occupied cell
   }
   #Calculates S,L, and Curr values for every nest
   if(parallel){
-    temp=parLapply(cluster,which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
+    temp=parLapply(cluster,which(use),optimLoadCurr,scenario=scenario)
   } else {
-    temp=lapply(which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
+    temp=lapply(which(use),optimLoadCurr,scenario=scenario)
   }
-  worstWorld$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-value
+  scenario$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-value
   for(u in 1:length(temp)){ #For each cell processed
     for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-      worstNests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-      worstNests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns curr
+      scenario$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
+      scenario$nests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns curr
     }
   }
-  #Sets values in unoccupied cells to NA (nothing can be moved from them )
-  occupied=worstNests[[i]]$n>0
-  worstNests[[i]]$L[!occupied]=worstNests[[i]]$curr[!occupied]=NA
-  return(list(worstNests=worstNests,worstWorld=worstWorld))
+  return(scenario)
 }
