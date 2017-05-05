@@ -1,7 +1,9 @@
 moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and update scenarios in nest i, given scenarioSet and moves list
+  if(moves$move) stop('Move not required')
+
   #Unpack moves list
-  moves$from=worst
-  moves$to=best
+  worst=which(moves$from)
+  best=which(moves$to)
 
   #Unpack scenarioSet - currently works for single-forager case, or multi-forager situation ignoring other nests
   scenarioSet[[i]]$best=bestScen
@@ -33,7 +35,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     #Step 3: Update values for nests and bestNests
 
     #For nests:
-    temp=lapply(which(worst),optimLoadCurr,nests=bestNests,world=bestWorld)
+    temp=lapply(which(worst),optimLoadCurr,scenario=baseScen)
     baseScen$world$S[which(worst)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
@@ -44,8 +46,8 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
 
     #For bestNests:
     use=worst|best #Location of worst and best cells
-    temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
-    baseScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
+    temp=lapply(which(use),optimLoadCurr,scenario=bestScen)
+    bestScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
         bestScen$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
@@ -88,7 +90,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     use=worst|best #Location of worst and best cells
 
     #For bestNests
-    temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
+    temp=lapply(which(use),optimLoadCurr,scenario=bestScen)
     bestScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
@@ -98,7 +100,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     }
 
     #For worstNests:
-    temp=lapply(which(use),optimLoadCurr,nests=worstNests,world=worstWorld)
+    temp=lapply(which(use),optimLoadCurr,scenario=worstScen)
     worstScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
@@ -108,6 +110,10 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     }
   }
 
-  #TO DO: PIECE TOGETHER RETURN VALUES, AND CHECK THAT THIS FUNCTION WORKS
+  #Puts scenarios back into scenario
+  scenarioSet$best=bestScen
+  scenarioSet$base=baseScen
+  if(!sol) scenarioSet$worst=worstScen
 
+  return(scenarioSet)
 }
