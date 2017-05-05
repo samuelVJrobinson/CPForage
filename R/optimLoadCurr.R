@@ -42,9 +42,9 @@ optimLoadCurr=function(u,scenario){
                 'optimCurr'=setNames(sapply(nests,function(x) switch(x$whatCurr,eff=-1,rat=-Inf)),names(nests)),
                 'S'=NA))
   }
-  #If patch is not worthless, but all nest slots are empty, returns 0 values for L and curr, and 1 for S
+  #If patch is not worthless, but all nest slots are empty, returns NA values for L, 0 for curr, and 1 for S
   if(sum(emptyNest)==length(emptyNest)){
-    return(list('optimL'=setNames(rep(0,length(nests)),names(nests)),
+    return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
                 'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
                 'S'=1)) #No competition in completely empty cells
   }
