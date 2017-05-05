@@ -63,7 +63,7 @@ test_that('Exception handling works properly',{
   #Empty nests in non-worthless patch
   scenario$nests[[1]]$n=0
   test2<-optimLoadCurr(u,scenario)
-  expect_identical(unname(test2$optimL),0) #L should be 0
+  expect_identical(unname(test2$optimL),NA) #L should be NA
   expect_identical(unname(test2$optimCurr),0) #curr should be 0
   expect_identical(unname(test2$S),1) #S should be 1
   scenario$nests[[1]]$n=382
@@ -83,5 +83,10 @@ test_that('Exception handling works properly',{
   #Forager arguments missing
   scenario$nests[[1]]$whatCurr=NULL
   expect_error(optimLoadCurr(u,scenario))
+  scenario$nests[[1]]$whatCurr='eff'
+
+  #Too many cells provided
+  expect_error(optimLoadCurr(u=c(1,2),scenario))
+
 })
 
