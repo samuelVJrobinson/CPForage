@@ -4,12 +4,10 @@
 \alias{makeWorst}
 \title{World with -TRANSFER less foragers}
 \usage{
-makeWorst(nests, world, whichNest = NA, parallel = F, cluster = NA)
+makeWorst(scenario, whichNest = NA, parallel = F, cluster = NA)
 }
 \arguments{
-\item{nests}{Nest structure}
-
-\item{world}{World structure}
+\item{scenario}{Nest structure and world structure (scenario)}
 
 \item{whichNest}{Which nest should have TRANSFER foragers taken away?}
 
@@ -18,14 +16,8 @@ makeWorst(nests, world, whichNest = NA, parallel = F, cluster = NA)
 \item{cluster}{If parallel, which cluster should be used}
 }
 \value{
-List of nests and world structure
+List of nests and world structure (scenario)
 }
 \description{
 World with -TRANSFER less foragers
-}
-\examples{
-#Parameters
-temp<-makeWorst(nests,world,1,T,cluster)
-temp$nests #Nests
-temp$world #World
 }
