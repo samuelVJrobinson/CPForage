@@ -10,7 +10,11 @@ optimLoadCurr=function(u,scenario){
   argNames=c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","beta","p_i",
              "h","c_f","c_i","H","d","L","curr")
   if(any(sapply(nests,function(x) any(!argNames %in% names(x))))){
-    stop('Nest-level arguments are missing for: ',names(nests)[sapply(nests,function(x) any(!argNames %in% names(x)))])
+    stop('Nest-level arguments are missing for: ',paste(names(nests)[sapply(nests,function(x) any(!argNames %in% names(x)))]))
+  }
+  #If there are too many cells provided
+  if(length(u)>1) {
+    stop('Too many cells provided. Use lapply to pass cells. e.g. lapply(use,optimLoadCurr,scenario=scenario)')
   }
 
   emptyNest=sapply(nests,function(x) x$n[u])==0 #Nests in cell U that have no foragers
@@ -33,6 +37,14 @@ optimLoadCurr=function(u,scenario){
   nestArgs=arglist[c("L_max_i","n_i","h_i","p_i","f_i","d_i","v_i",
                      "beta_i","H_i","c_i","c_f","whatCurr_i")] #Nest-level arguments
   patchArgs=arglist[c('mu','e','NumFls','l')] #Patch-level arguments
+
+  #Re-check nest- and patch-level arguments. Can occur if there is a dimensional mismatch
+  if(any(sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x))))){
+    stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
+  }
+  if(any(sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x))))) {
+    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
+  }
 
   #If anything in the patch-level argument list is NA or <=0, returns NA values - indicates worthless patch
   if(any(sapply(patchArgs,function(x) is.na(x)||x<=0))) {
