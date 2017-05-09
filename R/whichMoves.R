@@ -1,5 +1,5 @@
-whichMoves=function(scenarioSet,i=NA){ #Using nest i in scenarioSet, return list with best and worst cells
-  if(is.na(nests)){
+whichMoves=function(scenarioSet=NA,i=NA){ #Using nest i in scenarioSet, return list with best and worst cells
+  if(length(scenarioSet)==1 & is.na(scenarioSet[1])){
     stop('Nests not specified')
   } else if(is.na(i)){
     stop('Which nest not specified')
@@ -39,8 +39,13 @@ whichMoves=function(scenarioSet,i=NA){ #Using nest i in scenarioSet, return list
     #Step 3:
     #Is moving to the best cell a better deal than staying in the worst cell?
     #(i.e. all cells are approximately equal in their currency)?
-    if(bestNests[[i]]$curr[best]-nests[[i]]$curr[worst]>nests[[i]]$eps) move=T
-
+    if(bestNests[[i]]$curr[best]-nests[[i]]$curr[worst]>nests[[i]]$eps) {
+      move=T
+    } else {
+      move=F
+      worst=NA
+      best=NA
+    }
   } else { #If foragers are social
 
     #Step 1: find cell to move foragers FROM
@@ -77,7 +82,13 @@ whichMoves=function(scenarioSet,i=NA){ #Using nest i in scenarioSet, return list
     #Step 3:
     #Is the improvement caused by moving TRANSFER foragers >0?
     change=diff2[best]-diff1[worst] #Change in currency intake for the colony
-    if(change>nests[[i]]$eps) move=T
+    if(change>nests[[i]]$eps){
+      move=T
+    } else {
+      move=F
+      worst=NA
+      best=NA
+    }
   }
   return(list(move=move,from=worst,to=best))
 }

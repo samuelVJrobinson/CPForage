@@ -1,15 +1,17 @@
 moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and update scenarios in nest i, given scenarioSet and moves list
-  if(moves$move) stop('Move not required')
-
+  if(!moves$move){
+    warning('Move not required')
+    return(scenarioSet)
+  }
   #Unpack moves list
-  worst=which(moves$from)
-  best=which(moves$to)
+  worst=moves$from
+  best=moves$to
 
   #Unpack scenarioSet - currently works for single-forager case, or multi-forager situation ignoring other nests
-  scenarioSet[[i]]$best=bestScen
-  scenarioSet[[i]]$base=baseScen
+  bestScen=scenarioSet$best
+  baseScen=scenarioSet$base
   sol=baseScen$nests[[i]]$sol #Solitary foraging?
-  if(sol) scenarioSet[[i]]$worst=worstScen
+  if(!sol) worstScen=scenarioSet$worst
   transfer=baseScen$nests[[i]]$steps[baseScen$nests[[i]]$stepNum] #Transfer number
 
   if(sol){ #If foragers are solitary
@@ -29,8 +31,8 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     #Move TRANSFER foragers out of worst cell in NESTS
     baseScen$nests[[i]]$n[worst]=baseScen$nests[[i]]$n[worst]-transfer
     #Move TRANSFER foragers out of (and into) worst (and best) cells in BESTNESTS
-    bestScen$nests[[i]]$n[best]=bestScen$nests[[i]]$n[best]+transfer #Adds new foragers to best cell
-    bestScen$nests[[i]]$n[worst]=bestScen$nests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
+    bestScen$nests[[i]]$n[best]=bestScen$nests[[i]]$n[best]+transfer #Adds new foragers from best cell
+    bestScen$nests[[i]]$n[worst]=bestScen$nests[[i]]$n[worst]-transfer #Subtracts foragers to worst cell
 
     #Step 3: Update values for nests and bestNests
 
@@ -39,8 +41,8 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     baseScen$world$S[which(worst)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-        bestScen$nests[[name]][['L']][which(worst)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-        bestScen$nests[[name]][['curr']][which(worst)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
+        baseScen$nests[[name]][['L']][which(worst)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
+        baseScen$nests[[name]][['curr']][which(worst)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
       }
     }
 
@@ -71,7 +73,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     baseScen$nests[[i]]$n[worst]=worstScen$nests[[i]]$n[worst] #Overwrite forager number for worst cell
     baseScen$nests[[i]]$L[worst]=worstScen$nests[[i]]$L[worst] #Load size
     baseScen$nests[[i]]$curr[worst]=worstScen$nests[[i]]$curr[worst] #Currency
-    baseScen$world$S[worst]=bestScen$world$S[worst] #S-value
+    baseScen$world$S[worst]=worstScen$world$S[worst] #S-value
 
 
     #Step 2: Subtract foragers from worstNests, and bestNests
@@ -90,7 +92,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     use=worst|best #Location of worst and best cells
 
     #For bestNests
-    temp=lapply(which(use),optimLoadCurr,scenario=bestScen)
+    temp=lapply(which(use),optimLoadCurr,scenario=bestScen) #Run optimLoadCurr on all changed cells
     bestScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
@@ -100,7 +102,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     }
 
     #For worstNests:
-    temp=lapply(which(use),optimLoadCurr,scenario=worstScen)
+    temp=lapply(which(use),optimLoadCurr,scenario=worstScen) #Run optimLoadCurr on all changed cells
     worstScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     for(u in 1:length(temp)){ #For each cell processed
       for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
@@ -110,7 +112,7 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     }
   }
 
-  #Puts scenarios back into scenario
+  #Puts scenarios back into scenario set
   scenarioSet$best=bestScen
   scenarioSet$base=baseScen
   if(!sol) scenarioSet$worst=worstScen
