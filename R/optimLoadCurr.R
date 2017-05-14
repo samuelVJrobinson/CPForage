@@ -18,6 +18,14 @@ optimLoadCurr=function(u,scenario){
   }
 
   emptyNest=sapply(nests,function(x) x$n[u])==0 #Nests in cell U that have no foragers
+
+  #If all nest slots are empty, returns NA values for L, 0 for curr, and 1 for S
+  if(sum(emptyNest)==length(emptyNest)){
+    return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
+                'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
+                'S'=1)) #No competition in completely empty cells
+  }
+
   #Arguments to feed to optim, which optim feeds to curr
   arglist=list(L_max_i=sapply(nests[!emptyNest],function(x) x$L_max),
                n_i=sapply(nests[!emptyNest],function(x) x$n[u]),
@@ -34,16 +42,18 @@ optimLoadCurr=function(u,scenario){
                mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens[u]*cellSize^2),
                patchLev=world$patchLev)
 
-  nestArgs=arglist[c("L_max_i","n_i","h_i","p_i","f_i","d_i","v_i",
-                     "beta_i","H_i","c_i","c_f","whatCurr_i")] #Nest-level arguments
-  patchArgs=arglist[c('mu','e','NumFls','l')] #Patch-level arguments
+  #Nest-level arguments (one for each nest involved)
+  nestArgs=arglist[c("L_max_i","n_i","p_i","f_i","d_i","v_i",
+                     "beta_i","H_i","c_i","c_f","whatCurr_i")]
+  #Patch-level arguments (only one for the patch)
+  patchArgs=arglist[c('mu','e','NumFls','l','h_i')]
 
   #Re-check nest- and patch-level arguments. Can occur if there is a dimensional mismatch
   if(any(sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x))))){
     stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
   }
-  if(any(sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x))))) {
-    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
+  if(any(sapply(patchArgs,function(x) any(lengths(x)==0)))) {
+    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are missing (length==0). Are all dimensions equal?')
   }
 
   #If anything in the patch-level argument list is NA or <=0, returns NA values - indicates worthless patch
@@ -53,12 +63,6 @@ optimLoadCurr=function(u,scenario){
                 #Currency for foraging in empty patches
                 'optimCurr'=setNames(sapply(nests,function(x) switch(x$whatCurr,eff=-1,rat=-Inf)),names(nests)),
                 'S'=NA))
-  }
-  #If patch is not worthless, but all nest slots are empty, returns NA values for L, 0 for curr, and 1 for S
-  if(sum(emptyNest)==length(emptyNest)){
-    return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
-                'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
-                'S'=1)) #No competition in completely empty cells
   }
   startL=sapply(nests[!emptyNest],function(x) x$L[u]) #Starting vector for L-values
   startL[is.na(startL)]=0 #If there are any nests with NA L-values, sets L-value to zero (arglist already checked for NAs, so this means that the cell hasn't been used yet)

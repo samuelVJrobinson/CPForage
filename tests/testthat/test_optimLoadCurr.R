@@ -72,7 +72,7 @@ test_that('Exception handling works properly',{
   scenario$world$mu=0
   test3<-optimLoadCurr(u,scenario)
   expect_identical(unname(test3$optimL),NA) #L should be NA
-  expect_identical(unname(test3$optimCurr),-Inf) #curr should be -Inf (or -1 for eff maximizers)
+  expect_identical(unname(test3$optimCurr),-1) #curr should be -1 (or -Inf for rate maximizers)
   expect_identical(unname(test3$S),NA) #S should be NA
   world$mu=8.33e-05
 
@@ -87,6 +87,5 @@ test_that('Exception handling works properly',{
 
   #Too many cells provided
   expect_error(optimLoadCurr(u=c(1,2),scenario))
-
 })
 

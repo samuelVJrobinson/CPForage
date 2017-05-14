@@ -11,8 +11,6 @@
 #'
 #'@examples
 
-
-
 makeWorst=function(scenario,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
   #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all)

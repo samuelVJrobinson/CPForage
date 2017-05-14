@@ -79,13 +79,15 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     #Step 2: Subtract foragers from worstNests, and bestNests
 
     #Move TRANSFER foragers out of (and into) worst (and best) cells in WORSTNESTS
-    worstScen$nests[[i]]$n[best]=worstScen$nests[[i]]$n[best]+transfer #Adds new foragers to best cell
-    #Subtracts foragers from worst cell - if <= transfer, sets foragers to 0 (won't be considered for further transfers)
-    worstScen$nests[[i]]$n[worst]=ifelse(worstScen$nests[[i]]$n[worst]<=transfer,0,worstScen$nests[[i]]$n[worst]-transfer)
+    # worstScen$nests[[i]]$n[best]=worstScen$nests[[i]]$n[best]+transfer
+    worstScen$nests[[i]]$n[best]=baseScen$nests[[i]]$n[best]-transfer #Adds new foragers to best cell
+    #Subtracts foragers from worst cell - if < transfer, sets foragers to 0 (won't be considered for further transfers)
+    worstScen$nests[[i]]$n[worst]=ifelse(worstScen$nests[[i]]$n[worst]>=transfer,worstScen$nests[[i]]$n[worst]-transfer,0)
 
     #Move TRANSFER foragers out of (and into) worst (and best) cells in BESTNESTS
-    bestScen$nests[[i]]$n[best]=bestScen$nests[[i]]$n[best]+transfer #Adds new foragers to best cell
-    bestScen$nests[[i]]$n[worst]=bestScen$nests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
+    #Adds new foragers to best and worst cells
+    bestScen$nests[[i]]$n[best]=baseScen$nests[[i]]$n[best]+transfer
+    bestScen$nests[[i]]$n[worst]=baseScen$nests[[i]]$n[worst]+transfer
 
     #Step 3: Update values for worstNests and bestNests
 

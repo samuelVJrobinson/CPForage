@@ -1,32 +1,42 @@
 context('Movement selection function (whichMoves)')
 
-#Reduced nest structure with n, curr, sol, stepNum, and steps (tranfer number)
-nests<-list(nest1=list(n=matrix(c(0,5,10),nrow=1),curr=matrix(c(11,10,9),nrow=1),sol=T,stepNum=1,steps=5))
-world<-NA #Empty world
-base<-list(nests=nests,world=world) #Base scenario
-scenSet<-list(best=base,
-              base=base,
-              worst=base) #Scenario set
-scenSet$best$nests$nest1$n=scenSet$best$nests$nest1$n+5 #Number in "Best nests"
-scenSet$best$nests$nest1$curr=scenSet$best$nests$nest1$curr-1 #Curr in "Best nests"
-scenSet$worst$nests$nest1$n=matrix(c(0,0,5),nrow=1) #Number in "worst nests"
-scenSet$worst$nests$nest1$curr=matrix(c(11,11,10),nrow=1) #Curr in "worst nests"
+#Create scenario
+nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
+                       whatCurr="eff",sol=T,
+                       eps=0,L_max=59.5,v=7.8,
+                       beta=0.102,p_i=1,
+                       h=matrix(rep(1.5,3)),
+                       c_f=0.05,c_i=0.0042,
+                       H=100,d=matrix(c(50,100,150),1),
+                       L=matrix(rep(59.5,3),1),
+                       curr=matrix(c(5,10,15),1),
+                       steps=5,stepNum=1))
+world<-list(mu=matrix(rep(8.33e-05,3),1),
+            flDens=matrix(rep(520,3),1),
+            e=matrix(rep(14.3,3),1),
+            l=matrix(rep(1,3),1),
+            f=matrix(rep(0.86,3),1),
+            cellSize=10,patchLev=FALSE,
+            S=matrix(rep(1,3),1))
+baseScen=list(nests=nests,world=world)
+use<-c(1,2,3)
+temp=lapply(use,optimLoadCurr,scenario=baseScen)
+baseScen$world$S[use]=sapply(temp,function(x) x$S) #Assigns S-values
+for(u in 1:length(temp)){ #For each cell processed
+  for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
+    baseScen$nests[[name]][['L']][use[u]]=temp[[u]][['optimL']][[name]] #Assigns L
+    baseScen$nests[[name]][['curr']][use[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
+  }
+}
+#Create scenario set
+bestScen=makeBest(baseScen,1)
+worstScen=makeWorst(baseScen,1)
+scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Move calculations work properly',{
-  moves<-whichMoves(scenSet,i=1) #Best move for solitary foragers
-  expect_equal(which(moves$from),3)
-  expect_equal(which(moves$to),1)
-
-  scenSet$best$nests$nest1$sol=F
-  scenSet$base$nests$nest1$sol=F
-  scenSet$worst$nests$nest1$sol=F
-  moves<-whichMoves(scenSet,i=1) #Best move for social foragers
-  expect_equal(which(moves$from),3)
-  expect_equal(which(moves$to),1)
-
-  scenSet$best$nests$nest1$curr[1]=3
-  moves<-whichMoves(scenSet,i=1)
-  expect_equal(which(moves$to),2)
+  #Solitary foraging case:
+  moves=whichMoves(scenSet,1) #What moves should foragers make?
+  expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
 })
 
 

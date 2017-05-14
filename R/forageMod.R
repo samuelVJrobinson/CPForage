@@ -48,7 +48,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   if(any(!(names(world) %in% c("mu","flDens","e","l","f","cellSize","patchLev")))){
     stop('Each world requires the following arguments:\n "mu" "flDens" "e" "l" "f" "cellSize" "patchLev"')
   }
-  stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)), #Are matrices appropriate?
+  #Are matrices appropriately defined?
+  stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)),
             !any(!sapply(world[c('mu','flDens','e','l','f')],is.numeric)),
             !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)>=0)))
   stopifnot(length(unique(sapply(world[c('mu','flDens','e','l','f')],ncol)))==1, #Dimension checking
@@ -83,7 +84,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
       nests[[i]]$steps=sort(nests[[i]]$steps,T)
     } else { #Automatic determination of step size
       #Calculate max number of foragers to move during a single time step (avoiding "reflection" problem, where large number of foragers are assigned to far end of world simply because of depletion effect)
-
       fakeNests=nests #Copy of nests
       fakeNests[[i]]$n=0 #No foragers
       fakeNests[[i]]$h=min(fakeNests[[i]]$h,na.rm=T) #minimum handling time
@@ -101,7 +101,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
       #Function to return currency in a cell given n foragers
       maxNfun=function(n,fakeNests,fakeWorld,i,eps){
         fakeNests[[i]]$n=n
-        temp=optimLoadCurr(1,fakeNests,fakeWorld)
+        temp=optimLoadCurr(1,list(nests=fakeNests,world=fakeWorld))
         return(abs(unname(temp$optimCurr[i])-eps)) #Return absolute value of currency (for finding min)
       }
       #Number of foragers where currency goes to 0 (within range of 0.1)
@@ -134,7 +134,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   for(i in 1:length(nests)){ #Calculates initial loading rate, load size, and currency for each nest
     #Calculates currency for each cell for each nest
     occupied=nests[[i]]$n>0
-    temp=optimLoadCurr(occupied,nests,world) #Optimizes Load and Rate for occupied cells in nest i
+    temp=optimLoadCurr(which(occupied),list(nests=nests,world=world)) #Optimizes Load and Rate for occupied cells in nest i
     world$S[occupied]=temp$S #S-value
     for(name in names(temp$optimCurr)){
       nests[[name]][['L']][occupied]=temp[['optimL']][[name]] #Assigns L
@@ -144,6 +144,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
 
   #Idea:
   #Create BASE scenario: list containing a world and set of nests-represents "current situation"
+  base=list(nests=nests,world=world)
 
   #Depending on competitive framework:
 
@@ -222,160 +223,46 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   #NOTE: CURRENTLY THIS WORKS ONLY FOR SINGLE-NEST SITUATION. SHOULD BE LOOPED OVER ALL COMBINATIONS OF 'MOVES' IN MULTI-NEST SITUATION. ALTERNATIVELY, IT COULD JUST USE MARGINAL SITUATION (WHAT MOVE | OTHERS), BUT THIS MAY LEAD TO STABLE OSCILLATIONS, OR TURN-BASED ADVANTAGES
 
   #worstNests: represents world -transfer foragers in each cell
-  if(sum(sapply(nests, function(x) !x$sol))>0){ #If at least one nest uses social foraging
-    temp=makeWorst(nests,world,whichNest=1,cluster=cluster)
-    worstNests=temp$worstNests
-    worstWorld=temp$worstWorld
+  if(sum(sapply(base$nests, function(x) !x$sol))>0){ #If at least one nest uses social foraging
+    worst=makeWorst(base,whichNest=1,cluster=cluster)
+  } else {
+    worst=NA
   }
 
   #bestNests: represents world +transfer foragers in each cell
-  temp=makeBest(nests,world,whichNest=1,parallel=parallel,cluster=cluster)
-  bestNests=temp$bestNests
-  bestWorld=temp$bestWorld
+  best=makeBest(base,whichNest=1,parallel=parallel,cluster=cluster)
 
   #Groups scenarios (best, base, worst) into scenario set for nest1
-  nestSet=list(nest1=list(best=list(nests=bestNests,world=bestWorld),
-            base=list(nests,world),
-            worst=ifelse(!nests[[1]]$sol,list(nests=worstNests,world=worstWorld),NA)))
+  nestSet=list(best=best,base=base,worst=worst)
 
-  rm(worstNests,worstWorld,bestNests,bestWorld) #Cleanup
+  nNests=length(nestSet$base$nests) #Number of nests involved
 
   #Index of which nests are "done" (can't improve distribution any further)
-  done=rep(F,length(nestSet))
+  done=rep(F,nNests)
   nitt=1 #Number of iterations (debugging to see when it should be "cut off")
 
   if(verbose) print(paste('Simulation started at',Sys.time()))
+  browser()
   #Main loop
   while(sum(!done)>0){
     if(verbose && (nitt %% 10)==0) print(paste('Iteration',nitt)) #Prints every 10 iterations
-    done=rep(F,length(nestSet)) #Resets each time that at least one is "not done"
-    for(i in 1:length(nestSet)){  #For each nest
-      transfer=with(nestSet[[i]]$base$nests[[i]],steps[stepNum])
-
-      #Number of foragers to transfer
-      if(nestSet[[i]]$base$nests[[i]]$sol){ #If optimization is being done for solitary foragers
-
-        moves=whichMoves(nestSet[[i]],i=i) #Worst and best cells
-
-        if(moves$move){ #If whichMoves decides that moving is best
-#
-#           #Move TRANSFER foragers to the best cell
-#           nests[[i]]$n[best]=bestNests[[i]]$n[best]
-#           #Overwrite optimal Load and Currency from the best cell
-#           nests[[i]]$L[best]=bestNests[[i]]$L[best] #Load size
-#           nests[[i]]$curr[best]=bestNests[[i]]$curr[best] #Currency
-#           world$S[best]=bestWorld$S[best] #S-value
-#
-#           #Move TRANSFER foragers out of worst cell in NESTS
-#           nests[[i]]$n[worst]=nests[[i]]$n[worst]-transfer
-#           if(nests[[i]]$n[worst]==0 & sum(sapply(nests,function(x) x$n[worst]))==0){ #If worst cell is now empty...
-#             nests[[i]]$L[worst]=nests[[i]]$curr[worst]=0 #Set Load and currency to 0
-#             world$S[worst]=1 #Set S to 1 (no competitors)
-#           } else {
-#             #Calculate new optimal load and currency for worst cell in NESTS
-#             temp=optimLoadCurr(u=worst,nests,world)
-#             world$S[worst]=temp$S #S-value
-#             for(name in names(temp$optimCurr)){
-#               nests[[name]][['L']][worst]=temp[['optimL']][[name]] #Assigns L
-#               nests[[name]][['curr']][worst]=temp[['optimCurr']][[name]] #Assigns currency
-#             }
-#           }
-#           #Move TRANSFER foragers out of (and into) worst (and best) cells in BESTNESTS
-#           bestNests[[i]]$n[best]=bestNests[[i]]$n[best]+transfer #Adds new foragers to best cell
-#           bestNests[[i]]$n[worst]=bestNests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
-#           #Calculate new optimal load and currency for worst and best cells in BESTNESTS
-#           use=worst|best #Location of worst and best cells
-#           temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
-#           world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
-#           for(u in 1:length(temp)){ #For each cell processed
-#             for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-#               bestNests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-#               bestNests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-#             }
-#           }
-          #End of IF statement
-        } else if(transfer>1) { #If transfer number is >1 (i.e. not at the end of the list)
-          if(verbose) print(paste('Finished pass',nests[[i]]$stepNum,'of',length(nests[[i]]$steps),'for nest',i,'. Starting pass ',nests[[i]]$stepNum+1,'...'))
-          nests[[i]]$stepNum=nests[[i]]$stepNum+1 #Increments step number
-          #Creates new "bestNest" and "bestWorld" (for nest i)
-          temp=makeBest(nests,world,whichNest=i,parallel=parallel,cluster=cluster)
-          bestNests=temp$bestNests
-          bestWorld=temp$bestWorld
-        } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged
-
-      #SOCIAL FORAGERS
-      } else { #If optimization is being done for social foragers, colony rate/efficiency is maximized
-
-        moves=whichMoves(nest1Set,i=1) #Worst and best cells
-
-        if(moves$move){ #If whichMoves decides that moving is best
-          # #Move TRANSFER foragers from worst cell
-          # nests[[i]]$n[worst]=worstNests[[i]]$n[worst] #Overwrite forager number for worst cell
-          # nests[[i]]$L[worst]=worstNests[[i]]$L[worst] #Load size
-          # nests[[i]]$curr[worst]=worstNests[[i]]$curr[worst] #Currency
-          #
-          # #Move TRANSFER foragers to best cell
-          # nests[[i]]$n[best]=bestNests[[i]]$n[best] #Overwrite forager number for best cell
-          # nests[[i]]$L[best]=bestNests[[i]]$L[best] #Load size
-          # nests[[i]]$curr[best]=bestNests[[i]]$curr[best] #Currency
-          #
-          # #Move TRANSFER foragers out of (and into) worst (and best) cells in BESTNESTS
-          # bestNests[[i]]$n[best]=bestNests[[i]]$n[best]+transfer #Adds new foragers to best cell
-          # bestNests[[i]]$n[worst]=bestNests[[i]]$n[worst]-transfer #Subtracts foragers from worst cell
-          #
-          # #Calculate new optimal load and currency for worst and best cells in BESTNESTS
-          # use=worst|best #Location of worst and best cells
-          # temp=lapply(which(use),optimLoadCurr,nests=bestNests,world=bestWorld)
-          # bestWorld$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
-          # for(u in 1:length(temp)){ #For each cell processed
-          #   for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-          #     bestNests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-          #     bestNests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-          #   }
-          # }
-          #
-          # #Move TRANSFER foragers out of (and into) worst (and best) cells in WORSTNESTS
-          # worstNests[[i]]$n[best]=worstNests[[i]]$n[best]+transfer #Adds new foragers to best cell
-          # #Subtracts foragers from worst cell - if <= transfer, sets foragers to 0 (won't be considered for further transfers)
-          # worstNests[[i]]$n[worst]=ifelse(worstNests[[i]]$n[worst]<=transfer,0,worstNests[[i]]$n[worst]-transfer)
-          # #If worst cell is now empty...
-          # if(worstNests[[i]]$n[worst]==0 & sum(sapply(worstNests,function(x) x$n[worst]))==0){
-          #   worstNests[[i]]$L[worst]=worstNests[[i]]$curr[worst]=0 #Set Load and currency to 0
-          #   worstWorld$S[worst]=1 #Set S to 1 (no competitors)
-          # } else {
-          #   #Calculate new optimal load and currency for worst cell in worstNests
-          #   temp=optimLoadCurr(u=worst,worstNests,worstWorld)
-          #   worstWorld$S[worst]=temp$S #S-value
-          #   for(name in names(temp$optimCurr)){
-          #     worstNests[[name]][['L']][worst]=temp[['optimL']][[name]] #Assigns L
-          #     worstNests[[name]][['curr']][worst]=temp[['optimCurr']][[name]] #Assigns currency
-          #   }
-          # }
-          # #By definition, best cell cannot be completely empty, therefore:
-          # #Calculate new optimal load and currency for best cell in worstNests
-          # temp=optimLoadCurr(u=best,worstNests,worstWorld)
-          # worstWorld$S[best]=temp$S #S-value
-          # for(name in names(temp$optimCurr)){
-          #   worstNests[[name]][['L']][best]=temp[['optimL']][[name]] #Assigns L
-          #   worstNests[[name]][['curr']][best]=temp[['optimCurr']][[name]] #Assigns currency
-          # }
-        } else if(transfer>1) { #If transfer number is >1 (i.e. not at the end of the list)
-          if(verbose) print(paste('Finished pass',nests[[i]]$stepNum,'of',length(nests[[i]]$steps),'for nest',i))
-
-          nests[[i]]$stepNum=nests[[i]]$stepNum+1 #Increments step number
-
-          #Creates new "bestNest" and "bestWorld" (for nest i)
-          temp=makeBest(nests,world,whichNest=i,parallel=parallel,cluster=cluster)
-          bestNests=temp$bestNests
-          bestWorld=temp$bestWorld
-
-          #Creates new "bestNest" and "bestWorld" (for nest i)
-          temp=makeWorst(nests,world,whichNest=i,parallel=parallel,cluster=cluster)
-          worstNests=temp$worstNests
-          worstWorld=temp$worstWorld
-        } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged for this next
-      } #End of IF(sol/soc)
-    } #End of FOR loop
+    done=rep(F,length(nestSet$base$nests)) #Resets each time that at least one is "not done"
+    for(i in 1:nNests){  #For each nest
+      transfer=with(nestSet$base$nests[[i]],steps[stepNum]) #Number of foragers to transfer
+      moves=whichMoves(nestSet,i=i) #Worst and best cells
+      if(moves$move){ #If a move should be made
+        #This is not properly taking away foragers from worstNests
+        nestSet=moveForagers(nestSet,i,moves) #Moves foragers from cell to cell
+      } else if(transfer>1) { #If transfer number is >1 (i.e. not at the end of the list)
+        if(verbose) print(with(nestSet$base$nests[[i]],paste0('Finished pass ',stepNum,' of ',
+                                length(steps),' for nest ',i,'. Starting pass ',stepNum+1,'.')))
+        nestSet$base$nests[[i]]$stepNum=nestSet$base$nests[[i]]$stepNum+1 #Increments step number
+        #Creates new best scenario for nest i
+        tempBest=makeBest(nestSet$base,whichNest=i,parallel=parallel,cluster=cluster)
+        if(!nestSet$base$nests[[i]]$sol) tempWorst=makeWorst(nestSet$base,whichNest=i,parallel=parallel,cluster=cluster) else tempWorst=NA
+        nestSet=list(best=tempBest,base=nestSet$base,worst=tempWorst) #Create new scenario set
+      } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged
+    } #End of FOR loop (nests)
     #If all nests are "done", loop should exit
     nitt=nitt+1 #Increment counter
     if(nitt==iterlim) {
@@ -385,12 +272,13 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   } #End of WHILE loop
 
   #Calculate patch residence times per forager (in seconds)
-  for(i in 1:length(nests)){
-    nests[[i]]$loadingTime=with(nests[[i]],ifelse(n>0,L*(h+world$S*world$l*p_i+world$f)/world$S*world$l,NA))
-    nests[[i]]$travelTime=with(nests[[i]],ifelse(n>0,(d*(2-beta*(L/L_max)))/(v*(1-beta*(L/L_max))),NA))
-    nests[[i]]$boutLength=nests[[i]]$loadingTime+nests[[i]]$travelTime+nests[[i]]$H #Time for 1 complete foraging bout
+  for(i in 1:nNests){
+    nestSet$base$nests[[i]]$loadingTime=with(nestSet$base,
+                                             ifelse(nests[[i]]$n>0,nests[[i]]$L*(nests[[i]]$h+world$S*world$l*nests[[i]]$p_i+world$f)/world$S*world$l,NA))
+    nestSet$base$nests[[i]]$travelTime=with(nestSet$base$nests[[i]],ifelse(n>0,(d*(2-beta*(L/L_max)))/(v*(1-beta*(L/L_max))),NA))
+    nestSet$base$nests[[i]]$boutLength=with(nestSet$base$nests[[i]],loadingTime+travelTime+H) #Time for 1 complete foraging bout
   }
   if(parallel) stopCluster(cluster) #Stops SOCK clusters
   if(verbose) print(paste('Simulation ended at',Sys.time(),'. Final number of iterations = ',nitt,'.',sep=''))
-  return(list(world=world,nests=nests)) #Returns world and nests in a list
+  return(nestSet$base) #Returns world and nests in a list
 }

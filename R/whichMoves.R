@@ -71,7 +71,7 @@ whichMoves=function(scenarioSet=NA,i=NA){ #Using nest i in scenarioSet, return l
     bestNests[[i]]$curr[worst]=NA #Sets worst cell to NA so it won't be considered
     #Currency intake in +TRANSFER situation - Current currency intake
     diff2=bestNests[[i]]$curr*bestNests[[i]]$n-nests[[i]]$curr*nests[[i]]$n
-    #Location of cell with the greatest effect of adding TRANSFER foragers - best cell (best cell to move TO)
+    #Location of cell with the greatest effect of adding TRANSFER foragers - best cell to move TO
     best=which(diff2==max(diff2,na.rm=T),arr.ind=T)
     if(length(best)>2) best=best[1,] #If there are more than 1 best cells, choose the first
     bestNests[[i]]$curr[worst]=worstCurr #Resets currency
@@ -81,6 +81,8 @@ whichMoves=function(scenarioSet=NA,i=NA){ #Using nest i in scenarioSet, return l
 
     #Step 3:
     #Is the improvement caused by moving TRANSFER foragers >0?
+
+    #This equation is wrong. Should be
     change=diff2[best]-diff1[worst] #Change in currency intake for the colony
     if(change>nests[[i]]$eps){
       move=T
