@@ -1,7 +1,6 @@
 #'Extract currency (or currencies) from a cell.
 #'
-#Function to calculate currency(-ies) in a given cell. Called by \code{optimLoadCurr}
-#'
+#'Function to calculate currency(-ies) in a given cell. Called by \code{optimLoadCurr}
 #'@param L_i Load size (\eqn{\muL})
 #'@param L_max_i Maximum load size (\eqn{\muL})
 #'@param n_i Number of foragers in the cell

@@ -21,3 +21,6 @@ List of nests and world structure (scenario)
 \description{
 World with -TRANSFER less foragers
 }
+\examples{
+makeWorst(base,whichNest=1,cluster=cluster)
+}

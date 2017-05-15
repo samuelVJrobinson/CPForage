@@ -1,3 +1,74 @@
+#'Run CPF model
+#'
+#'\code{forageMod} runs central-place foraging model given forager and world
+#'data.
+#'
+#Function to run central-place foraging (CPF) model based on the ideal-free
+#distribution (IFD). Takes a list of nest parameters, and a list of world
+#parameters, runs the model until convergence, and then returns a list
+#containing a matrix of competitive effects, and a list of matrices of foraging
+#parameters (e.g. time in patch, foraging currency experienced at each cell).
+#Use \code{nests2df()} to convert this to a more readable dataframe. Currently
+#this only works for individual aggregations of CP foragers.
+#'
+#'@param world World structure. See examples.
+#'@param nests Nests structure. See examples.
+#'@param iterlim Limit to number of iterations. Default = 5000
+#'@param verbose Should function display progress?
+#'@param parallel Should parallel processing be used for large tasks?
+#'@param ncore Number of SNOW cores to use, if parallel = TRUE.
+#'@param tol Tolerance range for optimization function. Default =
+#'  .Machine$double.eps^0.25
+
+#'@return List containing world structure (competition term) and nest structure (forager distribution)
+#'
+#'@examples
+#'
+#'#Create test world for run
+#'nu_i<-0.3/3600 #Nectar production/hr for a single flower
+#'flDens<-520 #Flower density/m2
+#'e_i<-14.35 #Energetic value/unit
+#'l_i<-1 #Canola standing crop (1uL)
+#'f_i<-0.86 #Inter-flower flight time
+#
+#'#World structure
+#'cellSize<-10 #10m cells (100m^2)
+#'worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth
+#'nothing)
+#'world1<-list(mu=matrix(0,120,120),
+#'            flDens=matrix(0,120,120),
+#'            e=matrix(0,120,120),
+#'            l=matrix(0,120,120),
+#'            f=matrix(0,120,120),
+#'            cellSize=cellSize) #Empty world
+#'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
+#'canola-filled cells
+#'world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
+#'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
+#'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
+#'world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
+#'#How should competition (S) be calculated? Patch level (T),
+#'or flower level (F)
+#'
+#'#Constants for foragers
+#'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
+#'                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
+#'                       beta=0.102, #Proportion reduction in completely loaded
+#'                       flight speed (1-v/v_l)
+#'                       p_i=1, # Max loading rate (uL/s)
+#'                       h=1.5, #Handling time per flower (s)
+#'                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
+#'                       and Edelstein Keshet 1998)
+#'                       c_i=0.0042, #Cost of non-flying activity
+#'                       H=100) #Time spent in the hive (s) (Seeley 1986 found
+#'                       100s and 70s for high and low intake rates)
+#'
+#'#Nest structure (social rate maximizers)
+#'nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))
+#'
+#'#Run model
+#'testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=T)
+
 forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Machine$double.eps^0.25){
   #Internal functions
   if(verbose) print('Starting setup...')
@@ -242,7 +313,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   nitt=1 #Number of iterations (debugging to see when it should be "cut off")
 
   if(verbose) print(paste('Simulation started at',Sys.time()))
-  browser()
   #Main loop
   while(sum(!done)>0){
     if(verbose && (nitt %% 10)==0) print(paste('Iteration',nitt)) #Prints every 10 iterations

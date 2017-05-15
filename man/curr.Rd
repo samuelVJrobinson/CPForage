@@ -48,7 +48,7 @@ curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
 Summed currency, or vector of currencies
 }
 \description{
-Extract currency (or currencies) from a cell.
+Function to calculate currency(-ies) in a given cell. Called by \code{optimLoadCurr}
 }
 \examples{
 #Parameters
