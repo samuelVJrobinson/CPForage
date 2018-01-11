@@ -1,8 +1,6 @@
 #' Efficiency (ratio of profits/losses)
 #'
 #' Calculates efficiency for a forager in a given cell.
-#' \deqn{Efficiency = \frac{Gains - Foraging Loss - Travel Loss - Hive Loss}{Loading Loss + Travel Loss + Hive Loss}}
-#' Called by \code{curr_i}.
 #'
 #'@param L Load size (\eqn{\muL})
 #'@param L_max Maximum load size (\eqn{\muL})
@@ -17,7 +15,9 @@
 #'@param H Time spent inside hive (s)
 #'@param S Competition term (0-1)
 #'
-#'@return Efficiency (dimensionless)
+#'@return Efficiency (dimensionless).
+#'\eqn{Efficiency = \frac{Gains - Foraging Loss - Travel Loss - Hive Loss}{Loading Loss + Travel Loss + Hive Loss}}
+#' Called by \code{curr_i}.
 #'@examples
 #'efficiency(L=50,L_max=50.5,e=14.35,d=100,v=7.8,
 #'  h=1.5,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,S=0.5)

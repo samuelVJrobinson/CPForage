@@ -5,7 +5,7 @@
 #'@param c_f Cost of (unloaded) flight (J/s)
 #'@param L_max Maximum load size (\eqn{\muL})
 #'@param e_i Energetic value of load (\eqn{J/\muL})
-#'@return \eqn{\alpha} value
+#'@return \eqn{\alpha} value: units \eqn{J/\muL}
 #'@examples
 #'alpha(0.05,59.5,14.35)
 #'
