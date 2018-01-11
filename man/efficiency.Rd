@@ -32,12 +32,12 @@ efficiency(L, L_max, e, d, v, h, l, p_i, c_i, c_f, H, S)
 \item{S}{Competition term (0-1)}
 }
 \value{
-Efficiency (dimensionless)
+Efficiency (dimensionless).
+\eqn{Efficiency = \frac{Gains - Foraging Loss - Travel Loss - Hive Loss}{Loading Loss + Travel Loss + Hive Loss}}
+Called by \code{curr_i}.
 }
 \description{
 Calculates efficiency for a forager in a given cell.
-\deqn{Efficiency = \frac{Gains - Foraging Loss - Travel Loss - Hive Loss}{Loading Loss + Travel Loss + Hive Loss}}
-Called by \code{curr_i}.
 }
 \examples{
 efficiency(L=50,L_max=50.5,e=14.35,d=100,v=7.8,

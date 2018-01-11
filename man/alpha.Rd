@@ -14,7 +14,7 @@ alpha(c_f, L_max, e_i)
 \item{e_i}{Energetic value of load (\eqn{J/\muL})}
 }
 \value{
-\eqn{\alpha} value
+\eqn{\alpha} value: units \eqn{J/\muL}
 }
 \description{
 Returns \eqn{\alpha}, which is the proportion increase in completely loaded cost of flight (5e-05 value from Schmid-Hempel et al 1985)

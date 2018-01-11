@@ -24,11 +24,20 @@ forageMod(world, nests, iterlim = 5000, verbose = F, parallel = F,
 .Machine$double.eps^0.25}
 }
 \value{
-List containing world structure (competition term) and nest structure (forager distribution)
+List containing world structure (competition term) and nest structure
+ (forager distribution)
 }
 \description{
 \code{forageMod} runs central-place foraging model given forager and world
 data.
+
+Function to run central-place foraging (CPF) model based on the ideal-free
+distribution (IFD). Takes a list of nest parameters, and a list of world
+parameters, runs the model until convergence, and then returns a list
+containing a matrix of competitive effects, and a list of matrices of foraging
+parameters (e.g. time in patch, foraging currency experienced at each cell).
+Use \code{nests2df()} to convert this to a more readable dataframe. Currently
+this only works for individual aggregations of CP foragers.
 }
 \examples{
 
@@ -40,8 +49,7 @@ l_i<-1 #Canola standing crop (1uL)
 f_i<-0.86 #Inter-flower flight time
 #World structure
 cellSize<-10 #10m cells (100m^2)
-worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth
-nothing)
+worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth nothing)
 world1<-list(mu=matrix(0,120,120),
            flDens=matrix(0,120,120),
            e=matrix(0,120,120),
@@ -54,8 +62,7 @@ world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
-#How should competition (S) be calculated? Patch level (T),
-or flower level (F)
+#How should competition (S) be calculated? Patch level (T), or flower level (F)
 
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
