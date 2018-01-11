@@ -1,4 +1,15 @@
-#Function to calculate currency(-ies) in cell u of nests in scenario. Returns NA values if arguments to cells are NA.
+#' Optimal currency and load
+#'
+#' Function to calculate optimal currency and load in cell u of nests in
+#' scenario. Returns NA values if arguments to cells are NA. This is the
+#' "workhorse" function of CPForage
+#'
+#' @param u Address of cells to calculate
+#' @param scenario Scenario to use
+#'
+#' @return List of optimal currency and load values for each cell in \code{u}
+#'
+#' @examples
 optimLoadCurr=function(u,scenario){
   #Goal: Optimize a vector of L values to produce greatest summed currency in cell u
   nests=scenario$nests #Unpacks scenario
@@ -10,7 +21,8 @@ optimLoadCurr=function(u,scenario){
   argNames=c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","beta","p_i",
              "h","c_f","c_i","H","d","L","curr")
   if(any(sapply(nests,function(x) any(!argNames %in% names(x))))){
-    stop('Nest-level arguments are missing for: ',paste(names(nests)[sapply(nests,function(x) any(!argNames %in% names(x)))]))
+    stop('Nest-level arguments are missing for: ',paste(names(nests)[sapply(nests,function(x)
+      any(!argNames %in% names(x)))]))
   }
   #If there are too many cells provided
   if(length(u)>1) {

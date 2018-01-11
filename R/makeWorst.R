@@ -1,6 +1,6 @@
-#'World with -TRANSFER less foragers
+#'@title Create scenario with -TRANSFER less foragers
 #'
-#Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST. Called within \code{forageMod}
+#'@description Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST. Called within \code{forageMod}
 #'
 #'@param scenario Nest structure and world structure (scenario)
 #'@param whichNest Which nest should have TRANSFER foragers taken away?
@@ -10,8 +10,7 @@
 #'@return List of nests and world structure (scenario)
 #'
 #'@examples
-#'makeWorst(base,whichNest=1,cluster=cluster)
-
+#'makeWorst(base,whichNest=1,parallel=T,cluster=cluster)
 
 makeWorst=function(scenario,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')

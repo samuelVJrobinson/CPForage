@@ -1,8 +1,19 @@
-#Create and optimize currency in a world where TRANSFER foragers has been added to nest(s) WHICHNEST
-makeBest=function(scenario,whichNest=NA,parallel=F,cluster=NA){
+#'@title Create scenario with +TRANSFER more foragers
+#'
+#'@description Create and optimize currency in a world where -\code{transfer} foragers has been taken from nest(s) \code{whichnest}. Called within \code{forageMod}
+#'
+#'@param scenario Nest structure and world structure (scenario)
+#'@param whichNest Which nest should have TRANSFER foragers taken away?
+#'@param parallel Should computation be done in parallel?
+#'@param cluster If parallel, which cluster should be used
 
+#'@return List of nests and world structure (scenario)
+#'
+#'@examples
+#'makeBest(base,whichNest=1,parallel=T,cluster=cluster)
+makeBest=function(scenario,whichNest=NA,parallel=F,cluster=NA){
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
-  #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all). Essentially represent "worst case scenario".
+  #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all). Essentially represent "worst case scenario", where everyone moves to a given cell.
   if(is.na(whichNest)) stop('Nest # not specified')
 
   for(i in 1:length(scenario$nests)){ #Add foragers to each cell in each nest
