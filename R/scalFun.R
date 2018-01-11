@@ -1,3 +1,32 @@
+#Scaling function needs to be overhauled in order to deal with NN foraging. Should probably have 3 options:
+#1)Omniscient (equivalent to patch-level foraging) - all flowers are used perfectly equitably
+#2)Random (equivalent to flower-level foraging) - uses Possingham 1988 Eq 6
+#3)Nearest-Neighbour - needs to be created, using Weibull formula
+#
+#Other things to change:
+#Update f_i (?) - this is sort of optional, and the user could also just figure this out on their own.
+
+#Reminder of parameters:
+#'@param L_i Load size (\eqn{\muL})
+#'@param L_max_i Maximum load size (\eqn{\muL})
+#'@param n_i Number of foragers in the cell
+#'@param h_i Handling time per flower (s)
+#'@param p_i Licking speed for nectar (\eqn{\muL/s})
+#'@param f_i Flight time between flowers (s)
+#'@param d_i Distance from hive (m)
+#'@param v_i Unloaded flight speed from hive (m/s)
+#'@param beta_i Decrease in flight speed with load (m/s\eqn{\muL})
+#'@param H_i Time spent inside hive (s)
+#'@param c_i Cost of non-flying behaviour (J/s)
+#'@param c_f Cost of flight (J/s)
+#'@param whatCurr_i Currency to use. Must be either "rat" (net rate) or "eff" (efficiency)
+#'@param mu Per-flower nectar production (\eqn{\muL}/s)
+#'@param l Maximum standing crop per flower (\eqn{\muL})
+#'@param e Energetic value of nectar (J/\eqn{\muL})
+#'@param NumFls Number of flowers per patch
+#'@param sumAll Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.
+
+
 #Function to find  S (scaling term), given Load, Forager number, Max intake rate, travel time, and nectar production
 scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=NULL,p_i=NULL,f_i=NULL,d_i=NULL,v_i=NULL,beta_i=NULL,H_i=NULL,patchLev=F){
   #Argument checking
@@ -32,20 +61,22 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
   }
   #Function for calculating patch usage or flower depletion
   usage=function(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev){
-    if(patchLev){ #Patch-level version (uL/s)
+    if(patchLev){ #Patch-level version (uL/s) - "MeanNectar" from Maxima
     return(sum((L_i*n_i)/((L_i*(h_i+S*l*p_i+f_i)/S*l)+(d_i/v_i)*((2-beta_i*L_i/L_max_i)/(1-beta_i*L_i/L_max_i))+H_i)))
-    } else { #Flower-level version (uL per flower)
+    } else { #Flower-level version (uL per flower) -MeanNectar-(S*l)=0 from Maxima
     return(sum(l/((L_i*n_i)/(mu*NumFls*S*((d_i*(2*L_max_i-L_i*beta_i))/(v_i*(L_max_i-L_i*beta_i))+(L_i*(S*l*p_i+h_i+f_i))/(S*l)+H_i))+1)))
     }
   }
-  #Function for finding S by optimization
+  #Function for finding S by optimization. Returns output from usage function - constraints in order to minimize differences
   usageS=function(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev){
     if(patchLev){ #Patch-level version
+      #Usage must = mu*NumFls
       return(abs(usage(S=S,L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,patchLev=patchLev,
-                       f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-(mu*NumFls))) #Usage must = mu*NumFls
+                       f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-(mu*NumFls)))
     } else { #Flower-level version
+      #Mean nectar must = S*l
       return(abs(usage(S=S,mu=mu,l=l,NumFls=NumFls,L_i=L_i,n_i=n_i,h_i=h_i,patchLev=patchLev,
-                       p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-S*l)) #Mean nectar must = S*l
+                       p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-S*l))
     }
   }
   lmax=max(unique(argLen)) #Length of arguments (number of cells to process)
