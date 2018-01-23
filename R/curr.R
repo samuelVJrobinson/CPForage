@@ -59,9 +59,9 @@
 #'c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,patchLev=F)
 #')
 
-curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,NumFls,sumAll=T,patchLev=F){
+curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,NumFls,sumAll=T,forageType='random'){
   Stemp=scalFun(mu=mu, l=l, L_i=L_i, L_max=L_max_i, n_i=n_i, #Scaling function for cell
-                h_i=h_i, p_i=p_i, f_i=f_i, d_i=d_i, v_i=v_i, beta_i=beta_i, H_i=H_i,NumFls=NumFls,patchLev=patchLev)
+                h_i=h_i, p_i=p_i, f_i=f_i, d_i=d_i, v_i=v_i, beta_i=beta_i, H_i=H_i,NumFls=NumFls,forageType=forageType)
   #Vector of currencies for cell, using getCurr to return appropriate nest-specific currency
   currs=mapply(getCurr,whatCurr=whatCurr_i, L=L_i,L_max=L_max_i, e=e, d=d_i, v=v_i, h=h_i,
                f=f_i, l=l, p_i=p_i, c_i=c_i, c_f=c_f, H=H_i, beta=beta_i,Stemp)

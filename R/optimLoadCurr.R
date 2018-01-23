@@ -1,10 +1,9 @@
 #' Optimal currency and load
 #'
-#' Function to calculate optimal currency and load in cell u of nests in
-#' scenario. Returns NA values if arguments to cells are NA. This is the
-#' "workhorse" function of CPForage
+#' Function to calculate optimal currency and load in cell u. Returns NA values
+#' if arguments to cells are NA. This is the "workhorse" function of CPForage
 #'
-#' @param u Address of cells to calculate
+#' @param u Address of cells in Scenario to calculate
 #' @param scenario Scenario to use
 #'
 #' @return List of optimal currency and load values for each cell in \code{u}
@@ -29,41 +28,42 @@ optimLoadCurr=function(u,scenario){
     stop('Too many cells provided. Use lapply to pass cells. e.g. lapply(use,optimLoadCurr,scenario=scenario)')
   }
 
-  emptyNest=sapply(nests,function(x) x$n[u])==0 #Nests in cell U that have no foragers
+  emptyNest=nests[[1]]$n[u]<1 #Is cell u empty?
 
-  #If all nest slots are empty, returns NA values for L, 0 for curr, and 1 for S
-  if(sum(emptyNest)==length(emptyNest)){
+  #If cell u is empty, returns NA values for L, 0 for curr, and 1 for S
+  if(emptyNest){
     return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
                 'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
                 'S'=1)) #No competition in completely empty cells
   }
 
   #Arguments to feed to optim, which optim feeds to curr
-  arglist=list(L_max_i=sapply(nests[!emptyNest],function(x) x$L_max),
-               n_i=sapply(nests[!emptyNest],function(x) x$n[u]),
-               h_i=sapply(nests[!emptyNest],function(x) x$h[u]),
-               p_i=sapply(nests[!emptyNest],function(x) x$p_i),
+  arglist=list(L_max_i=nests[[1]]$L_max,n_i=nests[[1]]$n[u],
+               h_i=nests[[1]]$h[u],
+               p_i=nests[[1]]$p_i,
                f_i=world$f[u],
-               d_i=sapply(nests[!emptyNest],function(x) x$d[u]),
-               v_i=sapply(nests[!emptyNest],function(x) x$v),
-               beta_i=sapply(nests[!emptyNest],function(x) x$beta),
-               H_i=sapply(nests[!emptyNest],function(x) x$H),
-               c_i=sapply(nests[!emptyNest],function(x) x$c_i),
-               c_f=sapply(nests[!emptyNest],function(x) x$c_f),
-               whatCurr_i=sapply(nests[!emptyNest],function(x) x$whatCurr),
+               d_i=nests[[1]]$d[u],
+               v_i=nests[[1]]$v,
+               beta_i=nests[[1]]$beta,
+               H_i=nests[[1]]$H,
+               c_i=nests[[1]]$c_i,
+               c_f=nests[[1]]$c_f,
+               whatCurr_i=nests[[1]]$whatCurr,
                mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens[u]*cellSize^2),
-               patchLev=world$patchLev)
+               forageType=world$forageType)
+
 
   #Nest-level arguments (one for each nest involved)
   nestArgs=arglist[c("L_max_i","n_i","p_i","f_i","d_i","v_i",
-                     "beta_i","H_i","c_i","c_f","whatCurr_i")]
+                     "beta_i","H_i","c_i","c_f","whatCurr_i","forageType")]
   #Patch-level arguments (only one for the patch)
   patchArgs=arglist[c('mu','e','NumFls','l','h_i')]
 
-  #Re-check nest- and patch-level arguments. Can occur if there is a dimensional mismatch
+  #Are any nest-level arguments NA or nonexistant?
   if(any(sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x))))){
     stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
   }
+  #Are any patch-level arguments nonexistent?
   if(any(sapply(patchArgs,function(x) any(lengths(x)==0)))) {
     stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are missing (length==0). Are all dimensions equal?')
   }
@@ -76,24 +76,20 @@ optimLoadCurr=function(u,scenario){
                 'optimCurr'=setNames(sapply(nests,function(x) switch(x$whatCurr,eff=-1,rat=-Inf)),names(nests)),
                 'S'=NA))
   }
-  startL=sapply(nests[!emptyNest],function(x) x$L[u]) #Starting vector for L-values
-  startL[is.na(startL)]=0 #If there are any nests with NA L-values, sets L-value to zero (arglist already checked for NAs, so this means that the cell hasn't been used yet)
-  startL[startL!=0]=0 #TEMPORARY: ALWAYS USES 0 AS STARTING VALUE FOR LOAD
-  #L values that produce highest sum of currency
-  optimL=do.call(optim,c(list(par=startL,fn=curr,method='L-BFGS-B',lower=rep(0,length(startL)),
-                              upper=sapply(nests[!emptyNest],function(x) x$L_max),control=list(fnscale=-1)),arglist))$par
-  #Currency for each nest, and S-value for the cell
-  currencyS=do.call(curr,c(list(L=optimL,sumAll=F),arglist)) #Named vector of currency and S-values
-  optimCurr=currencyS[1:length(currencyS)-1]
-  S=currencyS[length(currencyS)]
-  if(sum(emptyNest)>0) { #If some nests had no foragers in cell U
-    tempL=tempCurr=setNames(rep(0,length(nests)),names(nests)) #Vector of zeros
-    tempL[names(nests)==names(optimL)]=optimL #Adds calculated values alongside zeros
-    tempCurr[names(nests)==names(optimCurr)]=optimCurr
-    optimL=tempL #Overwrites old vector
-    optimCurr=tempCurr
-  }
+  startL=0 #ALWAYS USES 0 AS STARTING VALUE FOR LOAD
+  #L value and maximized currency value
+  optimL=do.call(optimize,c(list(f=curr,interval=c(0,nests[[1]]$L_max),maximum=T),arglist))
+
+  # #Multi-nest version
+  # optimL=do.call(optim,c(list(par=startL,fn=curr,method='L-BFGS-B',lower=0,upper=nests[[1]]$L_max,
+  #                             control=list(fnscale=-1)),arglist))$par
+
+  #Best currency given optimum load, and S-value for the cell
+  currencyS=do.call(curr,c(list(L=optimL$maximum,sumAll=F),arglist)) #Named vector of currency and S-values
+  optimCurr=currencyS[[1]]
+  S=currencyS[[2]]
+
   # Return all results together in one list
-  resultList=list('optimL'=optimL,'optimCurr'=optimCurr,'S'=S)
+  resultList=list('optimL'=optimL$maximum,'optimCurr'=optimCurr,'S'=S)
   return(resultList)
 }

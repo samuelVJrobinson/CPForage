@@ -6,9 +6,12 @@
 #Other things to change:
 #Update f_i (?) - this is sort of optional, and the user could also just figure this out on their own.
 
-#Reminder of parameters:
+#Parameters:
+#'@param mu Per-flower nectar production (\eqn{\muL}/s)
+#'@param l Maximum standing crop per flower (\eqn{\muL})
+#'@param NumFls Number of flowers per patch
 #'@param L_i Load size (\eqn{\muL})
-#'@param L_max_i Maximum load size (\eqn{\muL})
+#'@param L_max_i Maximum load size (\eqn{\muL})#'
 #'@param n_i Number of foragers in the cell
 #'@param h_i Handling time per flower (s)
 #'@param p_i Licking speed for nectar (\eqn{\muL/s})
@@ -17,118 +20,119 @@
 #'@param v_i Unloaded flight speed from hive (m/s)
 #'@param beta_i Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param H_i Time spent inside hive (s)
-#'@param c_i Cost of non-flying behaviour (J/s)
-#'@param c_f Cost of flight (J/s)
-#'@param whatCurr_i Currency to use. Must be either "rat" (net rate) or "eff" (efficiency)
-#'@param mu Per-flower nectar production (\eqn{\muL}/s)
-#'@param l Maximum standing crop per flower (\eqn{\muL})
-#'@param e Energetic value of nectar (J/\eqn{\muL})
-#'@param NumFls Number of flowers per patch
-#'@param sumAll Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.
+#'@param forageType Type of foraging within patch ('omniscient', 'random', or 'nn' - nearest neighbour)
+#'
 
+#Test
+mu=0.3/3600;
+l=1;
+NumFls=520; #520 flowers
+L_i=59.5;
+L_max_i=59.5;
+n_i=10;
+h_i=1.5;
+p_i=1;
+f_i=0.86;
+d_i=100;
+v_i=7.8;
+beta_i=0.102;
+H_i=100;
+forageType='omniscient';
 
-#Function to find  S (scaling term), given Load, Forager number, Max intake rate, travel time, and nectar production
-scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=NULL,p_i=NULL,f_i=NULL,d_i=NULL,v_i=NULL,beta_i=NULL,H_i=NULL,patchLev=F){
+#Function to find  S (scaling term), given Load, Forager number, Max intake
+#rate, travel time, and nectar production
+scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=NULL,p_i=NULL,f_i=NULL,d_i=NULL,v_i=NULL,beta_i=NULL,H_i=NULL,forageType=NULL){
+
+  #This function is intended to be run for a single cell (scalar arguments for
+  #patch-level properties: mu,l,NumFls), but can return S-values for multiple
+  #nexts (scalar or vector arguments for all other properties)
+
   #Argument checking
   singleArgs=list(mu=mu,l=l,NumFls=NumFls) #Patch arguments (mu,l,NumFls)
   #If any arguments are missing, throw an error
   if(any(is.na(singleArgs))|any(sapply(singleArgs,is.null))){
-    stop('Patch arguments ',names(singleArgs)[sapply(singleArgs, function(x) is.null(x)||is.na(x))],' missing')
+    stop('Patch-level arguments ',names(singleArgs)[sapply(singleArgs, function(x) is.null(x)||is.na(x))],' missing')
   }
-  singArgLen=sapply(singleArgs,length) #Length of patch arguments
+  singArgLen=sapply(singleArgs,length) #Length of patch-level arguments
   if(sum(singArgLen>1)>0){ #If patch arguments are longer than 1
     stop(names(singArgLen)[singArgLen>1],'longer than 1. Patch arguments must be a scalar.')
   }
-  if(singleArgs$mu==0|singleArgs$l==0|singleArgs$NumFls==0) return(NA) #If production is 0, competition isn't defined.
-  #Forager (nest-level) arguments (Load,MaxLoad,number,Handling Time,Licking Rate,b/w flower flight time,distance,beta,hive time)
+  #If nectar production is 0, competition isn't defined.
+  if(singleArgs$mu==0|singleArgs$l==0|singleArgs$NumFls==0) return(NA)
+
+  #If L_i is less than 0 (negative competition), S = 1 (optimizer occasionally has to use
+  #slightly negative L values)
+  if(L_i<0) return(1)
+
+  #Forager (nest-level) arguments (Load,MaxLoad,number,Handling Time,Licking
+  #Rate,b/w flower flight time,distance,beta,hive time)
   Args=list(L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i)
   argLen=sapply(Args,length) #Length of forager arguments
   argSign=sapply(c(singleArgs,Args),function(x) sum(x<0))>0 #Are any arguments less than 0?
   argSign=argSign[names(argSign)!='L_i'] #Removes L_i from argSign
-  #If any arguments (other than L_i) are <0 (optimizer occasionally has to use slightly negative L values)
+  #If any arguments (other than L_i) are <0
   if(any(argSign)){
     stop(names(argSign)[argSign],' < 0')
-  } else if((sum(argLen==0)+sum(singArgLen==0))>0) {#If there are any zero-length arguments (i.e. not provided)
+  } else if(any(argLen==0)|any(singArgLen==0)) {#If there are any zero-length arguments (i.e. not provided)
     stop(paste(names(singArgLen)[singArgLen==0],names(argLen)[argLen==0],'arguments not provided'))
-  } else if(length(unique(argLen))>2) { #If there are >2 lengths of argument
-    stop(paste(length(unique(argLen)),'different vector lengths provided to scaleFun. Requires either 2 or 1.'))
-  } else if(length(unique(argLen))==2){ #If there are 2 lengths of argument
-    if(sum(unique(argLen)==1)==0){ #If neither argument is 1 long
-      stop('2 different vector lengths provided, but neither is 1 long.')
-    }
-    lmax=max(unique(argLen))
-    for(i in names(argLen)[argLen==1]) assign(i,rep(get(i),lmax))
-  }
-  #Function for calculating patch usage or flower depletion
-  usage=function(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev){
-    if(patchLev){ #Patch-level version (uL/s) - "MeanNectar" from Maxima
-    return(sum((L_i*n_i)/((L_i*(h_i+S*l*p_i+f_i)/S*l)+(d_i/v_i)*((2-beta_i*L_i/L_max_i)/(1-beta_i*L_i/L_max_i))+H_i)))
-    } else { #Flower-level version (uL per flower) -MeanNectar-(S*l)=0 from Maxima
-    return(sum(l/((L_i*n_i)/(mu*NumFls*S*((d_i*(2*L_max_i-L_i*beta_i))/(v_i*(L_max_i-L_i*beta_i))+(L_i*(S*l*p_i+h_i+f_i))/(S*l)+H_i))+1)))
-    }
-  }
-  #Function for finding S by optimization. Returns output from usage function - constraints in order to minimize differences
-  usageS=function(S,mu,l,NumFls,L_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,L_max_i,patchLev){
-    if(patchLev){ #Patch-level version
-      #Usage must = mu*NumFls
-      return(abs(usage(S=S,L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,patchLev=patchLev,
-                       f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-(mu*NumFls)))
-    } else { #Flower-level version
-      #Mean nectar must = S*l
-      return(abs(usage(S=S,mu=mu,l=l,NumFls=NumFls,L_i=L_i,n_i=n_i,h_i=h_i,patchLev=patchLev,
-                       p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i)-S*l))
-    }
-  }
-  lmax=max(unique(argLen)) #Length of arguments (number of cells to process)
-  if(patchLev){ #Patch-level S-value
-    maxUse=usage(S=1,L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,
-                 d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,patchLev=patchLev) #Patch-level usage when S=1
-    if((mu*NumFls)>=maxUse){ #If patch production >= max usage
-      return(1) #No competition
-    } else { #If max usage > patch production
-      if(lmax==1){ #If only 1 nest is present
-        #Original version
-        # S=(L_i*(h_i+f_i))/(l*((L_i*n_i/mu)-(d_i*(2-beta_i*L_i/L_max_i)/v_i*(1-beta_i*L_i/L_max_i))-H_i-L_i*p_i))
-        #Version from Maxima
-        S=-(L_i*(L_max_i-beta_i*L_i)*(h_i+f_i)*(mu*NumFls)*v_i)/(l*(L_i*L_max_i*(mu*NumFls)*p_i*v_i-beta_i*L_i^2*(mu*NumFls)*p_i*v_i-L_i*L_max_i*n_i*v_i+beta_i*L_i^2*n_i*v_i+H_i*L_max_i*(mu*NumFls)*v_i-beta_i*H_i*L_i*(mu*NumFls)*v_i+2*L_max_i*d_i*(mu*NumFls)-beta_i*L_i*d_i*(mu*NumFls)))
-      } else { #If there are multiple nests
-        S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu,NumFls=NumFls,patchLev=patchLev)$min #Finds S by optimization
-      }
-    }
-  } else { #Flower-level S-value using Possingham 1988
-    #In this version, flower-level depletion begins almost immediately
-    if(lmax==1){ #If only 1 nest is present
-      #Version from Maxima -
-      S=-(sqrt(((mu^2*L_i^4*NumFls^2*l^2*p_i^2+(-2*mu*L_i^4*NumFls*l^2*n_i+2*mu^2*H_i*L_i^3*NumFls^2*l^2+
-        (2*mu^2*L_i^4*NumFls^2*h_i+2*mu^2*L_i^4*NumFls^2*f_i)*l)*p_i+L_i^4*l^2*n_i^2+((2*mu*L_i^4*NumFls*h_i+
-        2*mu*L_i^4*NumFls*f_i)*l-2*mu*H_i*L_i^3*NumFls*l^2)*n_i+mu^2*H_i^2*L_i^2*NumFls^2*l^2+(2*mu^2*H_i*L_i^3*
-        NumFls^2*h_i+2*mu^2*H_i*L_i^3*NumFls^2*f_i)*l+mu^2*L_i^4*NumFls^2*h_i^2+2*mu^2*L_i^4*NumFls^2*f_i*h_i+mu^2*
-        L_i^4*NumFls^2*f_i^2)*v_i^2+(2*mu^2*L_i^3*NumFls^2*d_i*l^2*p_i-2*mu*L_i^3*NumFls*d_i*l^2*n_i+2*mu^2*H_i*
-        L_i^2*NumFls^2*d_i*l^2+(2*mu^2*L_i^3*NumFls^2*d_i*h_i+2*mu^2*L_i^3*NumFls^2*d_i*f_i)*l)*v_i+mu^2*L_i^2*
-        NumFls^2*d_i^2*l^2)*beta_i^2+((-2*mu^2*L_i^3*L_max_i*NumFls^2*l^2*p_i^2+(4*mu*L_i^3*L_max_i*NumFls*l^2*n_i-4*
-        mu^2*H_i*L_i^2*L_max_i*NumFls^2*l^2+(-4*mu^2*L_i^3*L_max_i*NumFls^2*h_i-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i)*l)*
-        p_i-2*L_i^3*L_max_i*l^2*n_i^2+(4*mu*H_i*L_i^2*L_max_i*NumFls*l^2+(-4*mu*L_i^3*L_max_i*NumFls*h_i-4*mu*L_i^3*
-        L_max_i*NumFls*f_i)*l)*n_i-2*mu^2*H_i^2*L_i*L_max_i*NumFls^2*l^2+(-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*h_i-4*mu^2*
-        H_i*L_i^2*L_max_i*NumFls^2*f_i)*l-2*mu^2*L_i^3*L_max_i*NumFls^2*h_i^2-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i*h_i-2*
-        mu^2*L_i^3*L_max_i*NumFls^2*f_i^2)*v_i^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*l^2*p_i+6*mu*L_i^2*L_max_i*NumFls*
-        d_i*l^2*n_i-6*mu^2*H_i*L_i*L_max_i*NumFls^2*d_i*l^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*h_i-6*mu^2*L_i^2*
-        L_max_i*NumFls^2*d_i*f_i)*l)*v_i-4*mu^2*L_i*L_max_i*NumFls^2*d_i^2*l^2)*beta_i+(mu^2*L_i^2*L_max_i^2*NumFls^2*
-        l^2*p_i^2+(-2*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*l^2+(2*mu^2*L_i^2*
-        L_max_i^2*NumFls^2*h_i+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i)*l)*p_i+L_i^2*L_max_i^2*l^2*n_i^2+((2*mu*L_i^2*
-        L_max_i^2*NumFls*h_i+2*mu*L_i^2*L_max_i^2*NumFls*f_i)*l-2*mu*H_i*L_i*L_max_i^2*NumFls*l^2)*n_i+mu^2*H_i^2*
-        L_max_i^2*NumFls^2*l^2+(2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*h_i+2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*f_i)*l+mu^2*
-        L_i^2*L_max_i^2*NumFls^2*h_i^2+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i*h_i+mu^2*L_i^2*L_max_i^2*NumFls^2*f_i^2)*
-        v_i^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*l^2*p_i-4*mu*L_i*L_max_i^2*NumFls*d_i*l^2*n_i+4*mu^2*H_i*L_max_i^2*
-        NumFls^2*d_i*l^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*h_i+4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*f_i)*l)*v_i+4*mu^2*
-        L_max_i^2*NumFls^2*d_i^2*l^2)+((-mu*L_i^2*NumFls*l*p_i+L_i^2*l*n_i-mu*H_i*L_i*NumFls*l+mu*L_i^2*NumFls*h_i+mu*
-        L_i^2*NumFls*f_i)*v_i-mu*L_i*NumFls*d_i*l)*beta_i+(mu*L_i*L_max_i*NumFls*l*p_i-L_i*L_max_i*l*n_i+mu*H_i*
-        L_max_i*NumFls*l-mu*L_i*L_max_i*NumFls*h_i-mu*L_i*L_max_i*NumFls*f_i)*v_i+2*mu*L_max_i*NumFls*d_i*l)/(((2*mu*
-        L_i^2*NumFls*l*p_i+2*mu*H_i*L_i*NumFls*l)*v_i+2*mu*L_i*NumFls*d_i*l)*beta_i+(-2*mu*L_i*L_max_i*NumFls*l*p_i-2*
-        mu*H_i*L_max_i*NumFls*l)*v_i-4*mu*L_max_i*NumFls*d_i*l)
-    } else { #If there are multiple nests
-      S=optimize(usageS,interval=c(0,1),L_i=L_i,n_i=n_i,h_i=h_i,l=l,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,L_max_i=L_max_i,mu=mu,NumFls=NumFls,patchLev=patchLev)$min #Find S by optimization
-    }
-  }
-  #If Load is slightly less than 0 (passed by optimizer to construct gradient) then it is possible to find S values >1. This sets it back to 1, since it is impossible for foragers to GIVE resources back.
+  } else if(any(argLen>1)) stop("Too many nest arguments. CPforage can't handle scenarios with >1 nest.")
+
+  #For omniscient and random foragers there is a definite solution for S|L,other
+  #parameters. Nearest neighbour foraging is nonlinear, so solution must be
+  #found iteratively
+
+  S=switch(forageType,
+           #Omniscient
+          omniscient={
+            X = -(L_i*NumFls*(h_i+f_i)*mu*v_i*(L_i*beta_i-L_max_i))/(l*(L_i^2*NumFls*mu*p_i*v_i*beta_i-
+            L_i^2*n_i*v_i*beta_i+H_i*L_i*NumFls*mu*v_i*beta_i+L_i*NumFls*d_i*mu*beta_i-L_i*L_max_i*NumFls*mu*
+            p_i*v_i+L_i*L_max_i*n_i*v_i-H_i*L_max_i*NumFls*mu*v_i-2*L_max_i*NumFls*d_i*mu))
+            ifelse(X<=0,1,X) #Sets S to 1 if less than 0 (can't have negative competition)
+            },
+           #Random - Possingham 1988: 1/(D_lamda*l+1)=S
+          random=-(sqrt(((mu^2*L_i^4*NumFls^2*l^2*p_i^2+(-2*mu*L_i^4*NumFls*l^2*n_i+2*mu^2*H_i*L_i^3*NumFls^2*
+            l^2+(2*mu^2*L_i^4*NumFls^2*h_i+2*mu^2*L_i^4*NumFls^2*f_i)*l)*p_i+L_i^4*l^2*n_i^2+((2*mu*L_i^4*
+            NumFls*h_i+2*mu*L_i^4*NumFls*f_i)*l-2*mu*H_i*L_i^3*NumFls*l^2)*n_i+mu^2*H_i^2*L_i^2*NumFls^2*l^2+
+            (2*mu^2*H_i*L_i^3*NumFls^2*h_i+2*mu^2*H_i*L_i^3*NumFls^2*f_i)*l+mu^2*L_i^4*NumFls^2*h_i^2+2*mu^2*
+            L_i^4*NumFls^2*f_i*h_i+mu^2*L_i^4*NumFls^2*f_i^2)*v_i^2+(2*mu^2*L_i^3*NumFls^2*d_i*l^2*p_i-2*mu*
+            L_i^3*NumFls*d_i*l^2*n_i+2*mu^2*H_i*L_i^2*NumFls^2*d_i*l^2+(2*mu^2*L_i^3*NumFls^2*d_i*h_i+2*mu^2*
+            L_i^3*NumFls^2*d_i*f_i)*l)*v_i+mu^2*L_i^2*NumFls^2*d_i^2*l^2)*beta_i^2+((-2*mu^2*L_i^3*L_max_i*NumFls^2*
+            l^2*p_i^2+(4*mu*L_i^3*L_max_i*NumFls*l^2*n_i-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*l^2+(-4*mu^2*L_i^3*
+            L_max_i*NumFls^2*h_i-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i)*l)*p_i-2*L_i^3*L_max_i*l^2*n_i^2+(4*mu*H_i*
+            L_i^2*L_max_i*NumFls*l^2+(-4*mu*L_i^3*L_max_i*NumFls*h_i-4*mu*L_i^3*L_max_i*NumFls*f_i)*l)*n_i-2*
+            mu^2*H_i^2*L_i*L_max_i*NumFls^2*l^2+(-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*h_i-4*mu^2*H_i*L_i^2*L_max_i*
+            NumFls^2*f_i)*l-2*mu^2*L_i^3*L_max_i*NumFls^2*h_i^2-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i*h_i-2*mu^2*
+            L_i^3*L_max_i*NumFls^2*f_i^2)*v_i^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*l^2*p_i+6*mu*L_i^2*L_max_i*
+            NumFls*d_i*l^2*n_i-6*mu^2*H_i*L_i*L_max_i*NumFls^2*d_i*l^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*h_i-6*
+            mu^2*L_i^2*L_max_i*NumFls^2*d_i*f_i)*l)*v_i-4*mu^2*L_i*L_max_i*NumFls^2*d_i^2*l^2)*beta_i+(mu^2*L_i^2*
+            L_max_i^2*NumFls^2*l^2*p_i^2+(-2*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*
+            l^2+(2*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i)*l)*p_i+L_i^2*L_max_i^2*
+            l^2*n_i^2+((2*mu*L_i^2*L_max_i^2*NumFls*h_i+2*mu*L_i^2*L_max_i^2*NumFls*f_i)*l-2*mu*H_i*L_i*L_max_i^2*
+            NumFls*l^2)*n_i+mu^2*H_i^2*L_max_i^2*NumFls^2*l^2+(2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*h_i+2*mu^2*H_i*
+            L_i*L_max_i^2*NumFls^2*f_i)*l+mu^2**NumFls^2*h_i^2+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i*h_i+mu^2*
+            L_i^2*L_max_i^2*NumFls^2*f_i^2)*v_i^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*l^2*p_i-4*mu*L_i*L_max_i^2*
+            NumFls*d_i*l^2*n_i+4*mu^2*H_i*L_max_i^2*NumFls^2*d_i*l^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*h_i+4*mu^2*
+            L_i*L_max_i^2*NumFls^2*d_i*f_i)*l)*v_i+4*mu^2*L_max_i^2*NumFls^2*d_i^2*l^2)+((-mu*L_i^2*NumFls*l*p_i+
+            L_i^2*l*n_i-mu*H_i*L_i*NumFls*l+mu*L_i^2*NumFls*h_i+mu*L_i^2*NumFls*f_i)*v_i-mu*L_i*NumFls*d_i*l)*
+            beta_i+(mu*L_i*L_max_i*NumFls*l*p_i-L_i*L_max_i*l*n_i+mu*H_i*L_max_i*NumFls*l-mu*L_i*L_max_i*NumFls*
+            h_i-mu*L_i*L_max_i*NumFls*f_i)*v_i+2*mu*L_max_i*NumFls*d_i*l)/(((2*mu*L_i^2*NumFls*l*p_i+2*mu*H_i*
+            L_i*NumFls*l)*v_i+2*mu*L_i*NumFls*d_i*l)*beta_i+(-2*mu*L_i*L_max_i*NumFls*l*p_i-2*mu*H_i*L_max_i*
+            NumFls*l)*v_i-4*mu*L_max_i*NumFls*d_i*l),
+           #Random foraging, with non-saturating nectar production
+          random_nonsat=do.call(optimize,list(f=nonlinearS,interval=c(0,2),
+                A=0.6100842,B=1.2001725,C=0,
+                mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
+                f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
+           #Single nearest-neighbour foraging, with non-saturating nectar production
+          singleNN_nonsat=do.call(optimize,list(f=nonlinearS,interval=c(0,2),
+                A=5.373864e-01 + 1.968079e+04*(mu/l) - 1.060072e+08*(mu/l)^2,
+                B=1.546423e+00 - 1.427107e+03*(mu/l) - 2.414069e+07*(mu/l)^2,
+                C=6.870373e-03 + 3.292027e+03*(mu/l) - 1.173807e+07*(mu/l)^2,
+                mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
+                f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
+          stop(paste0('Foraging type: "',forageType,'" not found.'))
+          )
+
+  #If S is greater than 1, sets it back to 1 (flowers can't give more than their max).
   if(S>1) return(1) else return(S)
 }
