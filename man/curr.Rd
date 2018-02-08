@@ -5,7 +5,7 @@
 \title{Extract currency (or currencies) from a cell.}
 \usage{
 curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
-  whatCurr_i, mu, l, e, NumFls, sumAll = T, patchLev = F)
+  whatCurr_i, mu, l, e, NumFls, sumAll = T, forageType = "random")
 }
 \arguments{
 \item{L_i}{Load size (\eqn{\muL})}

@@ -7,7 +7,7 @@
 optimLoadCurr(u, scenario)
 }
 \arguments{
-\item{u}{Address of cells to calculate}
+\item{u}{Address of cells in Scenario to calculate}
 
 \item{scenario}{Scenario to use}
 }
@@ -15,7 +15,9 @@ optimLoadCurr(u, scenario)
 List of optimal currency and load values for each cell in \code{u}
 }
 \description{
-Function to calculate optimal currency and load in cell u of nests in
-scenario. Returns NA values if arguments to cells are NA. This is the
-"workhorse" function of CPForage
+Function to calculate optimal currency and load in cell u. Returns NA values
+if arguments to cells are NA. This is the "workhorse" function of CPForage
+}
+\examples{
+
 }
