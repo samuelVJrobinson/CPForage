@@ -1,3 +1,52 @@
+#'@title Move foragers from one cell to another, and re-calculate L, S, and curr
+#'
+#'@description \code{moveForagers} moves foragers from one cell to another, and
+#'  re-calculates L, S, and curr.
+#'
+#'
+#'@param scenarioSet Scenario set list, containing best, base, and worst
+#'  scenarios (worst is NA for solitary foragers)
+#'@param i Which nest should be used? Currently defaults to 1.
+#'@param moves Move list from whichMoves, telling which cells to move from and
+#'  to.
+
+#'@return Updated scenario set list
+#'
+#'@examples
+#'#Create scenario
+#'nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
+#'                     whatCurr="eff",sol=T,
+#'                     eps=0,L_max=59.5,v=7.8,
+#'                     beta=0.102,p_i=1,
+#'                     h=matrix(rep(1.5,3),1),
+#'                     c_f=0.05,c_i=0.0042,
+#'                     H=100,d=matrix(c(50,100,150),1),
+#'                     L=matrix(rep(59.5,3),1),
+#'                     curr=matrix(c(5,10,15),1),
+#'                     steps=5,stepNum=1))
+#'
+#'world<-list(mu=matrix(rep(8.33e-05,3),1),
+#'          flDens=matrix(rep(520,3),1),
+#'          e=matrix(rep(14.3,3),1),
+#'          l=matrix(rep(1,3),1),
+#'          f=matrix(rep(0.86,3),1),
+#'          cellSize=10,patchLev=FALSE,
+#'          S=matrix(rep(1,3),1),
+#'          forageType='random')
+#'
+#'baseScen=list(nests=nests,world=world) #Baseline scenario
+# use=c(1,2,3) #Cells to use
+# temp=lapply(use,optimLoadCurr,scenario=baseScen) #Get optimL, currency, and S values from baseline
+# baseScen$world$S[use]=sapply(temp,function(x) x$S) #Assigns S-values to baseline scenario
+# for(u in 1:length(temp)){ #For each cell processed
+#   baseScen$nests[[1]][['L']][use[u]]=temp[[u]][['optimL']][[1]] #Assigns L
+#   baseScen$nests[[1]][['curr']][use[u]]=temp[[u]][['optimCurr']][[1]] #Assigns currency
+# }
+# #Create scenario set
+# bestScen=makeBest(baseScen,1)
+# worstScen=makeWorst(baseScen,1)
+# scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
+
 moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and update scenarios in nest i, given scenarioSet and moves list
   if(!moves$move){
     warning('Move not required')
@@ -39,23 +88,16 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     #For nests:
     temp=lapply(which(worst),optimLoadCurr,scenario=baseScen)
     baseScen$world$S[which(worst)]=sapply(temp,function(x) x$S) #Assigns S-values
-    for(u in 1:length(temp)){ #For each cell processed
-      for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-        baseScen$nests[[name]][['L']][which(worst)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-        baseScen$nests[[name]][['curr']][which(worst)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-      }
-    }
+    baseScen$nests[[1]]$L[which(worst)]=sapply(temp,function(x) x$optimL) #Assigns L
+    baseScen$nests[[1]]$curr[which(worst)]=sapply(temp,function(x) x$optimCurr) #Assigns currency
 
     #For bestNests:
     use=worst|best #Location of worst and best cells
     temp=lapply(which(use),optimLoadCurr,scenario=bestScen)
     bestScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
-    for(u in 1:length(temp)){ #For each cell processed
-      for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-        bestScen$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-        bestScen$nests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-      }
-    }
+    bestScen$nests[[1]]$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L
+    bestScen$nests[[1]]$curr[which(use)]=sapply(temp,function(x) x$optimCurr) #Assigns currency
+
 
   } else { #If foragers are social
 
@@ -96,22 +138,15 @@ moveForagers=function(scenarioSet,i,moves){ #Function to move foragers and updat
     #For bestNests
     temp=lapply(which(use),optimLoadCurr,scenario=bestScen) #Run optimLoadCurr on all changed cells
     bestScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
-    for(u in 1:length(temp)){ #For each cell processed
-      for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-        bestScen$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-        bestScen$nests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-      }
-    }
+    bestScen$nests[[1]]$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L
+    bestScen$nests[[1]]$curr[which(use)]=sapply(temp,function(x) x$optimCurr) #Assigns currency
 
     #For worstNests:
     temp=lapply(which(use),optimLoadCurr,scenario=worstScen) #Run optimLoadCurr on all changed cells
     worstScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
-    for(u in 1:length(temp)){ #For each cell processed
-      for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-        worstScen$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-        worstScen$nests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-      }
-    }
+    worstScen$nests[[1]]$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L
+    worstScen$nests[[1]]$curr[which(use)]=sapply(temp,function(x) x$optimCurr) #Assigns currency
+
   }
 
   #Puts scenarios back into scenario set
