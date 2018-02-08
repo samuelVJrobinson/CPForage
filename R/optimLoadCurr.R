@@ -9,6 +9,8 @@
 #' @return List of optimal currency and load values for each cell in \code{u}
 #'
 #' @examples
+#'
+
 optimLoadCurr=function(u,scenario){
   #Goal: Optimize a vector of L values to produce greatest summed currency in cell u
   nests=scenario$nests #Unpacks scenario
