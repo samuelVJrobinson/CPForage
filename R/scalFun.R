@@ -1,12 +1,7 @@
-#Scaling function needs to be overhauled in order to deal with NN foraging. Should probably have 3 options:
-#1)Omniscient (equivalent to patch-level foraging) - all flowers are used perfectly equitably
-#2)Random (equivalent to flower-level foraging) - uses Possingham 1988 Eq 6
-#3)Nearest-Neighbour - needs to be created, using Weibull formula
-#
-#Other things to change:
-#Update f_i (?) - this is sort of optional, and the user could also just figure this out on their own.
-
-#Parameters:
+#' scalFun
+#'
+#' Function to find  S (scaling term), given Load, Forager number, Max intake rate, travel time, and nectar production
+#'
 #'@param mu Per-flower nectar production (\eqn{\muL}/s)
 #'@param l Maximum standing crop per flower (\eqn{\muL})
 #'@param NumFls Number of flowers per patch
@@ -20,27 +15,38 @@
 #'@param v_i Unloaded flight speed from hive (m/s)
 #'@param beta_i Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param H_i Time spent inside hive (s)
-#'@param forageType Type of foraging within patch ('omniscient', 'random', or 'nn' - nearest neighbour)
+#'@param forageType Type of foraging within patch (see details)
 #'
-
-#Test
-mu=0.3/3600;
-l=1;
-NumFls=520; #520 flowers
-L_i=59.5;
-L_max_i=59.5;
-n_i=10;
-h_i=1.5;
-p_i=1;
-f_i=0.86;
-d_i=100;
-v_i=7.8;
-beta_i=0.102;
-H_i=100;
-forageType='omniscient';
-
-#Function to find  S (scaling term), given Load, Forager number, Max intake
-#rate, travel time, and nectar production
+#' @return S-value for patch
+#'
+#' @details \code{forageType} can be one of the following:
+#' \itemize{
+#' \item \code{random}: random foraging (Possingham 1988)
+#' \item \code{multiNN}: nearest-neighbour foraging
+#' \item \code{omniscient}: flowers are shared optimally between foragers. Non-saturating nectar production.
+#' \item \code{random_nonsat}: random foraging with non-saturating nectar production (ceiling at \code{l}).
+# \item \code{singleNN_nonsat}: nearest-neighbour foraging with non-saturating nectar production, assuming all visits done by one forager
+#'
+#' }
+#' @examples
+#' #Test
+#' mu=0.3/3600
+#' l=1
+#' NumFls=520 #520 flowers
+#' L_i=59.5
+#' L_max_i=59.5
+#' n_i=10
+#' h_i=1.5
+#' p_i=1
+#' f_i=0.86
+#' d_i=100
+#' v_i=7.8
+#' beta_i=0.102
+#' H_i=100
+#' forageType='omniscient'
+#'
+#' scalFun(mu,l,NumFls,L_i,L_max_i,n_i,h_i,p_i,f_i,
+#'                 d_i,v_i,beta_i,H_i,forageType)
 scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=NULL,p_i=NULL,f_i=NULL,d_i=NULL,v_i=NULL,beta_i=NULL,H_i=NULL,forageType=NULL){
 
   #This function is intended to be run for a single cell (scalar arguments for
@@ -123,11 +129,17 @@ scalFun=function(mu=NULL,l=NULL,NumFls=NULL,L_i=NULL,L_max_i=NULL,n_i=NULL,h_i=N
                 A=0.6100842,B=1.2001725,C=0,
                 mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
                 f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
-           #Single nearest-neighbour foraging, with non-saturating nectar production
-          singleNN_nonsat=do.call(optimize,list(f=nonlinearS,interval=c(0,2),
-                A=5.373864e-01 + 1.968079e+04*(mu/l) - 1.060072e+08*(mu/l)^2,
-                B=1.546423e+00 - 1.427107e+03*(mu/l) - 2.414069e+07*(mu/l)^2,
-                C=6.870373e-03 + 3.292027e+03*(mu/l) - 1.173807e+07*(mu/l)^2,
+          ## Single nearest-neighbour foraging, with non-saturating nectar production -not that useful
+          # singleNN_nonsat=do.call(optimize,list(f=nonlinearS,interval=c(0,2),
+          #       A=5.373864e-01 + 1.968079e+04*(mu/l) - 1.060072e+08*(mu/l)^2,
+          #       B=1.546423e+00 - 1.427107e+03*(mu/l) - 2.414069e+07*(mu/l)^2,
+          #       C=6.870373e-03 + 3.292027e+03*(mu/l) - 1.173807e+07*(mu/l)^2,
+          #       mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
+          #       f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
+          multiNN=do.call(optimize,list(f=nonlinearS_2,interval=c(0,1),
+                a0=0.900152061, #Taken from simulation results
+                a1=0.005108424,
+                b1=0.001209028,
                 mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
                 f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
           stop(paste0('Foraging type: "',forageType,'" not found.'))

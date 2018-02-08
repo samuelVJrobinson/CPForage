@@ -28,7 +28,7 @@ test_that("scalFun is between 0 and 1",{
 
   #Single nearest-neighbour foraging with non-saturating nectar production
   expect_equal(with(params,scalFun(mu,l,NumFls,L_i,L_max_i,n_i=100,
-                                   h_i,p_i,f_i,d_i,v_i,beta_i,H_i,forageType='singleNN_nonsat')),0.2531934,tol=1e-4)
+                                   h_i,p_i,f_i,d_i,v_i,beta_i,H_i,forageType='multiNN')),0.1133237,tol=1e-4)
 
   })
 
@@ -48,5 +48,4 @@ test_that('scalFun error handling works',{
   expect_error(with(params,scalFun(mu=mu,l=l,NumFls=-100,L_i=L_i,L_max_i=L_max_i,n_i=100,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i,forageType='omniscient')))
 
   expect_error(with(params,scalFun(mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=-100,h_i=h_i,p_i=p_i,f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i,forageType='omniscient')))
-
 })
