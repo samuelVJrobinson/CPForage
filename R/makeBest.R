@@ -28,11 +28,8 @@ makeBest=function(scenario,whichNest=NA,parallel=F,cluster=NA){
     temp=lapply(which(use),optimLoadCurr,scenario=scenario)
   }
   scenario$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-value
-  for(u in 1:length(temp)){ #For each cell processed
-    for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-      scenario$nests[[name]][['L']][which(use)[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-      scenario$nests[[name]][['curr']][which(use)[u]]=temp[[u]][['optimCurr']][[name]] #Assigns curr
-    }
-  }
+  scenario$nests[[1]]$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L
+  scenario$nests[[1]]$curr[which(use)]=sapply(temp,function(x) x$optimCurr) #Assigns curr
+
   return(scenario)
 }

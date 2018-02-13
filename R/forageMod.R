@@ -11,17 +11,52 @@
 #' Use \code{nests2df()} to convert this to a more readable dataframe. Currently
 #' this only works for individual aggregations of CP foragers.
 #'
-#'@param world World structure. See examples.
-#'@param nests Nests structure. See examples.
-#'@param iterlim Limit to number of iterations. Default = 5000
+#'@param world World structure. List.
+#'@param nests Nests structure. List of lists.
+#'@param iterlim Limit to number of iterations. Default = 5000.
 #'@param verbose Should function display progress?
 #'@param parallel Should parallel processing be used for large tasks?
-#'@param ncore Number of SNOW cores to use, if parallel = TRUE.
+#'@param ncore Number of SNOW cores to use (if parallel = TRUE).
+#'@param parMethod Message passing for parallel processing (see details below).
 #'@param tol Tolerance range for optimization function. Default =
-#'  .Machine$double.eps^0.25
+#'  .Machine$double.eps^0.25.
 
 #'@return List containing world structure (competition term) and nest structure
 #'  (forager distribution)
+#'
+#'@details \code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} and \code{RMPI} (if using MPI) packages.
+#'
+#'\code{world} should be a named list containing:
+#' \itemize{
+#' \item \code{mu}: nectar production values (per s); matrix
+#' \item \code{e}: flower density (per \eqn{m^2}); matrix
+#' \item \code{l}: maximum nectar standing crop (\eqn{\mu}L); matrix
+#' \item \code{f}: travel time between flowers (s); matrix
+#' \item \code{cellSize}: size of a patch (m)
+#' \item \code{forageType}: foraging type. See \code{\link{curr}}.
+#' }
+#'
+#' \code{nests} should be a list of lists, each containing:
+#' \itemize{
+#' \item \code{xloc}: x-location of nest (column number) in world; integer.
+#' \item \code{yloc}: y-location of nest (row number) in world; integer.
+#' \item \code{n}: number of foragers; integer.
+#' \item \code{whatCurr}: '\code{eff}' (efficiency) or '\code{rat}' (rate).
+#' \item \code{sol}: solitary foraging; logical.
+#' \item \code{constants}: named list of foraging parameters:
+#' \itemize{
+#' \item \code{L_max}: maximum load (\eqn{\mu}L); numeric.
+#' \item \code{v}: maximum flight speed (m/s); numeric.
+#' \item \code{beta}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
+#' \item \code{p_i}: rate of nectar uptake ("licking speed", \eqn{\mu}L/s); numeric.
+#' \item \code{h}: handling time before draining a flower (s); numeric.
+#' \item \code{c_f}: energetic cost of flight (J/s); numeric.
+#' \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
+#' \item \code{H}: time spent in hive/aggregation (s); numeric.
+#' }
+#' \item \code{eps}: accuracy to use for optimization; numeric.
+#' }
+#'
 #'
 #'@examples
 #'
@@ -47,7 +82,7 @@
 #'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 #'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 #'world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
-#'#How should competition (S) be calculated? Patch level (T), or flower level (F)
+#'world1$forageType <- 'omniscient' #Foraging style for flowers within patch
 #'
 #'#Constants for foragers
 #'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
@@ -115,8 +150,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
     }
   }
   #Check values for world
-  if(any(!(names(world) %in% c("mu","flDens","e","l","f","cellSize","patchLev")))){
-    stop('Each world requires the following arguments:\n "mu" "flDens" "e" "l" "f" "cellSize" "patchLev"')
+  if(any(!(c("mu","flDens","e","l","f","cellSize","forageType") %in% names(world)))){
+    stop('Each world requires the following arguments:\n "mu" "flDens" "e" "l" "f" "cellSize" "forageType"')
   }
   #Are matrices appropriately defined?
   stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)),
@@ -124,7 +159,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
             !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)>=0)))
   stopifnot(length(unique(sapply(world[c('mu','flDens','e','l','f')],ncol)))==1, #Dimension checking
             length(unique(sapply(world[c('mu','flDens','e','l','f')],nrow)))==1)
-  stopifnot(is.numeric(world$cellSize),world$cellSize>0,is.logical(world$patchLev))
+  stopifnot(is.numeric(world$cellSize),world$cellSize>0,is.character(world$forageType))
 
   #SETUP
   #Add matrix of competition values to the world
@@ -191,10 +226,23 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   if(parallel){
     if(verbose) cat('Loading parallel processing libraries...')
     require(doSNOW) #Parallel processing
-    cluster=makeCluster(ncore, type = "SOCK") #Set up ncore number of clusters for parallel processing
+
+    #Set up ncore number of clusters for parallel processing
+    if(parMethod=='MPI'){
+      require(Rmpi)
+      ncore <- mpi.universe.size() #Number of cores available to spawn processes
+      sprintf("TEST mpi.universe.size() =  %i", ncore) #Number of MPI processes
+      cluster <- makeCluster(ncore-1, type = "MPI") #Set up clusters for parallel processing (# cores - 1 = # slave cores)
+    } else {
+      cluster <- makeCluster(ncore, type = "SOCK") #Create SOCK clusters
+    }
+
     registerDoSNOW(cluster) #Registers clusters
-    .Last <- function(){ #"Emergency" function for closing clusters upon unexpected stop
+
+    #"Emergency" function for closing clusters upon unexpected stop
+    .Last <- function(){
       stopCluster(cluster) #Stops SOCK clusters
+      if(parMethod=='MPI') mpi.quit()
       print("forageMod stopped unexpectedly. Closing clusters.")
     }
   } else cluster=NA
@@ -310,8 +358,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
   #Index of which nests are "done" (can't improve distribution any further)
   done=rep(F,nNests)
   nitt=1 #Number of iterations (debugging to see when it should be "cut off")
-
-  if(verbose) print(paste('Simulation started at',Sys.time()))
+  startTime <- Sys.time() #Starting time
+  if(verbose) print(paste('Simulation started at',startTime))
   #Main loop
   while(sum(!done)>0){
     if(verbose && (nitt %% 10)==0) print(paste('Iteration',nitt)) #Prints every 10 iterations
@@ -347,7 +395,16 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,tol=.Ma
     nestSet$base$nests[[i]]$travelTime=with(nestSet$base$nests[[i]],ifelse(n>0,(d*(2-beta*(L/L_max)))/(v*(1-beta*(L/L_max))),NA))
     nestSet$base$nests[[i]]$boutLength=with(nestSet$base$nests[[i]],loadingTime+travelTime+H) #Time for 1 complete foraging bout
   }
-  if(parallel) stopCluster(cluster) #Stops SOCK clusters
-  if(verbose) print(paste('Simulation ended at',Sys.time(),'. Final number of iterations = ',nitt,'.',sep=''))
+  if(parallel) {
+    stopCluster(cluster) #Stops clusters
+    if(parMethod=='MPI') mpi.quit()
+  }
+
+  if(verbose) print(paste('Simulation ended at ',Sys.time(),
+                          '. Elapsed time = ',
+                          round(as.numeric(Sys.time()-startTime),3),' ',
+                          units(Sys.time()-startTime),
+                          '. Final number of iterations = ',
+                          nitt,'.',sep=''))
   return(nestSet$base) #Returns world and nests in a list
 }

@@ -5,7 +5,7 @@
 \title{Extract currency (or currencies) from a cell.}
 \usage{
 curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
-  whatCurr_i, mu, l, e, NumFls, sumAll = T, patchLev = F)
+  whatCurr_i, mu, l, e, NumFls, sumAll = T, forageType = "random")
 }
 \arguments{
 \item{L_i}{Load size (\eqn{\muL})}
@@ -43,6 +43,8 @@ curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
 \item{NumFls}{Number of flowers per patch}
 
 \item{sumAll}{Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.}
+
+\item{forageType}{Foraging style (see details below).}
 }
 \value{
 Summed currency, or vector of currencies
@@ -50,40 +52,39 @@ Summed currency, or vector of currencies
 \description{
 Function to calculate currency(-ies) in a given cell. Called by \code{optimLoadCurr}
 }
+\details{
+\code{forageType} can be one of the following:
+\itemize{
+\item \code{random}: random foraging (Possingham 1988)
+\item \code{nn}: nearest-neighbour foraging
+\item \code{omniscient}: flowers are shared optimally between foragers. Non-saturating nectar production.
+\item \code{random_nonsat}: random foraging with non-saturating nectar production (ceiling at \code{l}).
+}
+}
 \examples{
 #Parameters
 params=list(L_i=59.5,
-L_max_i=59.5,
-n_i=10,
-h_i=1.5,
-p_i=1,
-f_i=0.86,
-d_i=100,
-v_i=7.8,
-beta_i=0.102,
-H_i=100,
-c_f=0.05,
-c_i=0.0042,
-mu=0.3/3600,
-l=1,
-e=14,
-NumFls=520*(10^2))
+           L_max_i=59.5,
+           n_i=10,
+           h_i=1.5,
+           p_i=1,
+           f_i=0.86,
+           d_i=100,
+           v_i=7.8,
+           beta_i=0.102,
+           H_i=100,
+           c_f=0.05,
+           c_i=0.0042,
+           mu=0.3/3600,
+           l=1,
+           e=14.35,
+           NumFls=520*(10^2))
 
-#Currency for 1 nest
-with(params,
-curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=F)
-)
+temp1 <- with(params,
+    curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+             c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,
+             forageType='omniscient'))
 
-#Summed currency for 2 nests
-with(params,
-curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,300),v_i,beta_i,H_i,
-c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,patchLev=F)
-)
-
-#Individual currencies for 2 nests
-with(params,
-curr(L_i,L_max_i,n_i,h_i,p_i,f_i,c(d_i,300),v_i,beta_i,H_i,
-c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,patchLev=F)
-)
+temp1[['eff']] #Efficiency within cell
+temp1[['S']] #Reduction in per-flower value
 }
