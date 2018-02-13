@@ -30,15 +30,59 @@ test_that('Summed currency works properly',{
   #Net rate, using random foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='random')),2.048508,tol=1e-4)
-
 })
 
 test_that('Individual currency and S-values work properly',{
   #Efficiency with 1 nest
-  expect_equal(length(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                       c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))),2)
+  effRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                   c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
+  expect_equal(length(effRes1),2)
+  expect_equal(effRes1[['S']],0.6167597,tol=1e-4)
+  expect_equal(effRes1[['eff']],163.5881,tol=1e-4)
 
+  #Same thing, but 200 foragers
+  effRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
+  expect_equal(length(effRes2),2)
+  expect_equal(effRes2[['S']],0.04695388,tol=1e-4)
+  expect_equal(effRes2[['eff']],21.73642420,tol=1e-4)
+
+
+  #Net rate with 1 nests
+  ratRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
+  expect_equal(length(ratRes1),2)
+  expect_equal(ratRes1[['S']],0.6167597,tol=1e-4)
+  expect_equal(ratRes1[['rat']],2.048508,tol=1e-4)
+
+  #Same thing, but 200 foragers
+  ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
+  expect_equal(length(ratRes2),2)
+  expect_equal(ratRes2[['S']],0.04695388,tol=1e-4)
+  expect_equal(ratRes2[['rat']],0.25691618,tol=1e-4)
+
+  #NN foraging:
+  #Net rate with 1 nests
+  ratRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
+  expect_equal(length(ratRes1),2)
+  expect_equal(ratRes1[['S']],0.6167597,tol=1e-4)
+  expect_equal(ratRes1[['rat']],2.048508,tol=1e-4)
+
+  #Same thing, but 200 foragers
+  ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
+  expect_equal(length(ratRes2),2)
+  expect_equal(ratRes2[['S']],0.04695388,tol=1e-4)
+  expect_equal(ratRes2[['rat']],0.25691618,tol=1e-4)
 })
 
 
-
+test_that('Exception handling (limited - mostly in optimLoadCurr)',{
+  #Load of 0
+  effRes1 <- with(params,curr(0,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
+  expect_equal(effRes1[['S']],1)
+  expect_equal(effRes1[['eff']],-1)
+})

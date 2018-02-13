@@ -7,7 +7,7 @@
 getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S)
 }
 \arguments{
-\item{whatCurr}{Currency to use. Must be either "rat" (net rate) or "eff" (efficiency)}
+\item{whatCurr}{Currency to use. Must be either \code{"rat"} (net rate) or \code{"eff"} (efficiency)}
 
 \item{L}{Load size (\eqn{\muL})}
 
@@ -44,6 +44,7 @@ Currency, or vector of currencies
 Function to calculate currency (or currencies) in a given cell. Called by \code{curr} to return nest-specific currency.
 }
 \examples{
+#Parameters
 params=list(L=59.5,
 L_max=59.5,
 e=14,
@@ -58,6 +59,8 @@ c_f=0.05,
 H=100,
 beta=0.102)
 
-with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S=1))
-with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S=0.5))
+with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
+           l,p_i,c_i,c_f,H,beta,S=1))
+with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
+           l,p_i,c_i,c_f,H,beta,S=0.5))
 }

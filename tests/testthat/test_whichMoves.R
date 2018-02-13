@@ -16,27 +16,31 @@ world<-list(mu=matrix(rep(8.33e-05,3),1),
             e=matrix(rep(14.3,3),1),
             l=matrix(rep(1,3),1),
             f=matrix(rep(0.86,3),1),
-            cellSize=10,patchLev=FALSE,
+            cellSize=10,forageType='omniscient',
             S=matrix(rep(1,3),1))
 baseScen=list(nests=nests,world=world)
-use<-c(1,2,3)
+use=c(1,2,3)
 temp=lapply(use,optimLoadCurr,scenario=baseScen)
 baseScen$world$S[use]=sapply(temp,function(x) x$S) #Assigns S-values
-for(u in 1:length(temp)){ #For each cell processed
-  for(name in names(temp[[u]]$optimCurr)){ #For each nest within temp[[u]]
-    baseScen$nests[[name]][['L']][use[u]]=temp[[u]][['optimL']][[name]] #Assigns L
-    baseScen$nests[[name]][['curr']][use[u]]=temp[[u]][['optimCurr']][[name]] #Assigns currency
-  }
-}
+baseScen$nests[[1]]$L[use]=sapply(temp,function(x) x$optimL) #Assigns L
+baseScen$nests[[1]]$curr[use]=sapply(temp,function(x) x$optimCurr) #Assigns currency
+
 #Create scenario set
 bestScen=makeBest(baseScen,1)
 worstScen=makeWorst(baseScen,1)
 scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Move calculations work properly',{
-  #Solitary foraging case:
+  #Solitary omniscient foraging case:
   moves=whichMoves(scenSet,1) #What moves should foragers make?
   expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
+
+  #Social omniscient foraging
+  scenSet$best$nests[[1]]$sol=F
+  scenSet$base$nests[[1]]$sol=F
+  scenSet$worst$nests[[1]]$sol=F
+  expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
+
 })
 
 

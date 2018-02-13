@@ -56,16 +56,16 @@ test_that('Exception handling works properly',{
   #Empty nests in non-worthless patch
   scenario$nests[[1]]$n=0 #Sets forager number to 0
   test2<-optimLoadCurr(u,scenario)
-  expect_identical(test2$optimL,NA) #L should be NA
-  expect_identical(test2$optimCurr,0) #curr should be 0
+  expect_equivalent(test2$optimL,NA) #L should be NA
+  expect_equivalent(test2$optimCurr,0) #curr should be 0
   expect_identical(test2$S,1) #S should be 1
   scenario$nests[[1]]$n=382 #Resets forager number
 
   #Worthless patch
   scenario$world$mu=0 #Sets per flower production to 0
   test3<-optimLoadCurr(u,scenario)
-  expect_identical(test3$optimL,NA) #L should be NA
-  expect_identical(test3$optimCurr,-Inf) #curr should be -1 (or -Inf for rate maximizers)
+  expect_equivalent(test3$optimL,NA) #L should be NA
+  expect_equivalent(test3$optimCurr,-1) #curr should be -1 (or -Inf for rate maximizers)
   expect_identical(test3$S,NA) #S should be NA
   scenario$world$mu=8.33e-05
 
