@@ -8,20 +8,22 @@ forageMod(world, nests, iterlim = 5000, verbose = F, parallel = F,
   ncore = 4, tol = .Machine$double.eps^0.25)
 }
 \arguments{
-\item{world}{World structure. See examples.}
+\item{world}{World structure. List.}
 
-\item{nests}{Nests structure. See examples.}
+\item{nests}{Nests structure. List of lists.}
 
-\item{iterlim}{Limit to number of iterations. Default = 5000}
+\item{iterlim}{Limit to number of iterations. Default = 5000.}
 
 \item{verbose}{Should function display progress?}
 
 \item{parallel}{Should parallel processing be used for large tasks?}
 
-\item{ncore}{Number of SNOW cores to use, if parallel = TRUE.}
+\item{ncore}{Number of SNOW cores to use (if parallel = TRUE).}
 
 \item{tol}{Tolerance range for optimization function. Default =
-.Machine$double.eps^0.25}
+.Machine$double.eps^0.25.}
+
+\item{parMethod}{Message passing for parallel processing (see details below).}
 }
 \value{
 List containing world structure (competition term) and nest structure
@@ -38,6 +40,40 @@ containing a matrix of competitive effects, and a list of matrices of foraging
 parameters (e.g. time in patch, foraging currency experienced at each cell).
 Use \code{nests2df()} to convert this to a more readable dataframe. Currently
 this only works for individual aggregations of CP foragers.
+}
+\details{
+\code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} and \code{RMPI} (if using MPI) packages.
+
+\code{world} should be a named list containing:
+\itemize{
+\item \code{mu}: nectar production values (per s); matrix
+\item \code{e}: flower density (per \eqn{m^2}); matrix
+\item \code{l}: maximum nectar standing crop (\eqn{\mu}L); matrix
+\item \code{f}: travel time between flowers (s); matrix
+\item \code{cellSize}: size of a patch (m)
+\item \code{forageType}: foraging type. See \code{\link{curr}}.
+}
+
+\code{nests} should be a list of lists, each containing:
+\itemize{
+\item \code{xloc}: x-location of nest (column number) in world; integer.
+\item \code{yloc}: y-location of nest (row number) in world; integer.
+\item \code{n}: number of foragers; integer.
+\item \code{whatCurr}: '\code{eff}' (efficiency) or '\code{rat}' (rate).
+\item \code{sol}: solitary foraging; logical.
+\item \code{constants}: named list of foraging parameters:
+\itemize{
+\item \code{L_max}: maximum load (\eqn{\mu}L); numeric.
+\item \code{v}: maximum flight speed (m/s); numeric.
+\item \code{beta}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
+\item \code{p_i}: rate of nectar uptake ("licking speed", \eqn{\mu}L/s); numeric.
+\item \code{h}: handling time before draining a flower (s); numeric.
+\item \code{c_f}: energetic cost of flight (J/s); numeric.
+\item \code{c_i}: energetic cost of non-flight (J/s); numeric.
+\item \code{H}: time spent in hive/aggregation (s); numeric.
+}
+\item \code{eps}: accuracy to use for optimization; numeric.
+}
 }
 \examples{
 
@@ -62,7 +98,7 @@ world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
-#How should competition (S) be calculated? Patch level (T), or flower level (F)
+world1$forageType <- 'omniscient' #Foraging style for flowers within patch
 
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
