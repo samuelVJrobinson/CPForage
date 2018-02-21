@@ -242,7 +242,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
     #"Emergency" function for closing clusters upon unexpected stop
     .Last <- function(){
       stopCluster(cluster) #Stops SOCK clusters
-      if(parMethod=='MPI') mpi.quit()
+      if(parMethod=='MPI') mpi.exit()
       print("forageMod stopped unexpectedly. Closing clusters.")
     }
   } else cluster=NA
@@ -397,7 +397,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   }
   if(parallel) {
     stopCluster(cluster) #Stops clusters
-    if(parMethod=='MPI') mpi.quit()
+    if(parMethod=='MPI') mpi.exit() #Cleans MPI states and detaches Rmpi
   }
 
   if(verbose) print(paste('Simulation ended at ',Sys.time(),
