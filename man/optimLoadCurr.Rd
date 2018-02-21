@@ -16,7 +16,7 @@ List of optimal currency and load values for each cell in \code{u}
 }
 \description{
 Function to calculate optimal currency and load in cell u. Returns NA values
-if arguments to cells are NA. This is the "workhorse" function of CPForage
+if arguments to cells are NA. This is the "workhorse" function of CPForage.
 }
 \examples{
 
