@@ -5,7 +5,7 @@
 \title{Run CPF model}
 \usage{
 forageMod(world, nests, iterlim = 5000, verbose = F, parallel = F,
-  ncore = 4, tol = .Machine$double.eps^0.25)
+  ncore = 4, parMethod = "SOCK", tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{world}{World structure. List.}
@@ -20,10 +20,10 @@ forageMod(world, nests, iterlim = 5000, verbose = F, parallel = F,
 
 \item{ncore}{Number of SNOW cores to use (if parallel = TRUE).}
 
+\item{parMethod}{Message passing for parallel processing (see details below).}
+
 \item{tol}{Tolerance range for optimization function. Default =
 .Machine$double.eps^0.25.}
-
-\item{parMethod}{Message passing for parallel processing (see details below).}
 }
 \value{
 List containing world structure (competition term) and nest structure

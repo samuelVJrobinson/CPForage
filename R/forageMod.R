@@ -211,7 +211,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
       }
       #Number of foragers where currency goes to 0 (within range of 0.1)
       maxn=optimize(maxNfun,interval=c(0,max(nests[[i]]$n)),fakeNests=fakeNests,
-                    fakeWorld=fakeWorld,i=i,eps=0.1)$min
+                    fakeWorld=fakeWorld,i=i,eps=0.2)$min
       #maxn=0.6*maxn #60% of maximum value (buffer zone)
       nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,0.5)))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end
