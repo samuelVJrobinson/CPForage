@@ -209,11 +209,12 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
         temp=optimLoadCurr(1,list(nests=fakeNests,world=fakeWorld))
         return(abs(unname(temp$optimCurr[i])-eps)) #Return absolute value of currency (for finding min)
       }
-      #Number of foragers where currency goes to 0 (within range of 0.1)
+      #Number of foragers where currency goes to Smin.
+      #Simulation indicates that Smin should optimally be around 0.18 for multi-core, 0.3 for serial runs.
       maxn=optimize(maxNfun,interval=c(0,max(nests[[i]]$n)),fakeNests=fakeNests,
-                    fakeWorld=fakeWorld,i=i,eps=0.2)$min
-      #maxn=0.6*maxn #60% of maximum value (buffer zone)
-      nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,0.5)))) #Initial distribution
+                    fakeWorld=fakeWorld,i=i,eps=ifelse(parallel,0.177,0.3))$min
+      #Simulation indicates that phi should be 0.6 for multi-core, 4.3 for serial run
+      nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,ifelse(parallel,0.6,4.3))))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end
       #Cuts off anything step size above maxN, making maxN the largest possible step
       nests[[i]]$steps=c(floor(maxn),nests[[i]]$steps[nests[[i]]$steps<maxn])
