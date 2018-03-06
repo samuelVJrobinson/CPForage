@@ -398,7 +398,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   }
   if(parallel) {
     stopCluster(cluster) #Stops clusters
-    if(parMethod=='MPI') mpi.finalize() #Cleans MPI states and detaches Rmpi
+    # if(parMethod=='MPI') mpi.finalize() #Cleans MPI states and detaches Rmpi
   }
 
   if(verbose) print(paste('Simulation ended at ',Sys.time(),
