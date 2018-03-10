@@ -106,12 +106,35 @@ curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,
                A=0.6100842,B=1.2001725,C=0,
                mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
                f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
-             nn=do.call(optimize,list(f=nonlinearS_2,interval=c(0,1),
-               a0=0.900152061, #Taken from simulation results
-               a1=0.005108424,
-               b1=0.001209028,
-               mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
-               f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum,
+             #Nearest-neighbour foraging. Used same as random, as simulation results were very similar.
+            nn=-(sqrt(((mu^2*L_i^4*NumFls^2*l^2*p_i^2+(-2*mu*L_i^4*NumFls*l^2*n_i+2*mu^2*H_i*L_i^3*NumFls^2*
+               l^2+(2*mu^2*L_i^4*NumFls^2*h_i+2*mu^2*L_i^4*NumFls^2*f_i)*l)*p_i+L_i^4*l^2*n_i^2+((2*mu*L_i^4*
+               NumFls*h_i+2*mu*L_i^4*NumFls*f_i)*l-2*mu*H_i*L_i^3*NumFls*l^2)*n_i+mu^2*H_i^2*L_i^2*NumFls^2*l^2+
+               (2*mu^2*H_i*L_i^3*NumFls^2*h_i+2*mu^2*H_i*L_i^3*NumFls^2*f_i)*l+mu^2*L_i^4*NumFls^2*h_i^2+2*mu^2*
+               L_i^4*NumFls^2*f_i*h_i+mu^2*L_i^4*NumFls^2*f_i^2)*v_i^2+(2*mu^2*L_i^3*NumFls^2*d_i*l^2*p_i-2*mu*
+               L_i^3*NumFls*d_i*l^2*n_i+2*mu^2*H_i*L_i^2*NumFls^2*d_i*l^2+(2*mu^2*L_i^3*NumFls^2*d_i*h_i+2*mu^2*
+               L_i^3*NumFls^2*d_i*f_i)*l)*v_i+mu^2*L_i^2*NumFls^2*d_i^2*l^2)*beta_i^2+((-2*mu^2*L_i^3*L_max_i*NumFls^2*
+               l^2*p_i^2+(4*mu*L_i^3*L_max_i*NumFls*l^2*n_i-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*l^2+(-4*mu^2*L_i^3*
+               L_max_i*NumFls^2*h_i-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i)*l)*p_i-2*L_i^3*L_max_i*l^2*n_i^2+(4*mu*H_i*
+               L_i^2*L_max_i*NumFls*l^2+(-4*mu*L_i^3*L_max_i*NumFls*h_i-4*mu*L_i^3*L_max_i*NumFls*f_i)*l)*n_i-2*
+               mu^2*H_i^2*L_i*L_max_i*NumFls^2*l^2+(-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*h_i-4*mu^2*H_i*L_i^2*L_max_i*
+               NumFls^2*f_i)*l-2*mu^2*L_i^3*L_max_i*NumFls^2*h_i^2-4*mu^2*L_i^3*L_max_i*NumFls^2*f_i*h_i-2*mu^2*
+               L_i^3*L_max_i*NumFls^2*f_i^2)*v_i^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*l^2*p_i+6*mu*L_i^2*L_max_i*
+               NumFls*d_i*l^2*n_i-6*mu^2*H_i*L_i*L_max_i*NumFls^2*d_i*l^2+(-6*mu^2*L_i^2*L_max_i*NumFls^2*d_i*h_i-6*
+               mu^2*L_i^2*L_max_i*NumFls^2*d_i*f_i)*l)*v_i-4*mu^2*L_i*L_max_i*NumFls^2*d_i^2*l^2)*beta_i+(mu^2*L_i^2*
+               L_max_i^2*NumFls^2*l^2*p_i^2+(-2*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*
+               l^2+(2*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i)*l)*p_i+L_i^2*L_max_i^2*
+               l^2*n_i^2+((2*mu*L_i^2*L_max_i^2*NumFls*h_i+2*mu*L_i^2*L_max_i^2*NumFls*f_i)*l-2*mu*H_i*L_i*L_max_i^2*
+               NumFls*l^2)*n_i+mu^2*H_i^2*L_max_i^2*NumFls^2*l^2+(2*mu^2*H_i*L_i*L_max_i^2*NumFls^2*h_i+2*mu^2*H_i*
+               L_i*L_max_i^2*NumFls^2*f_i)*l+mu^2**NumFls^2*h_i^2+2*mu^2*L_i^2*L_max_i^2*NumFls^2*f_i*h_i+mu^2*
+               L_i^2*L_max_i^2*NumFls^2*f_i^2)*v_i^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*l^2*p_i-4*mu*L_i*L_max_i^2*
+               NumFls*d_i*l^2*n_i+4*mu^2*H_i*L_max_i^2*NumFls^2*d_i*l^2+(4*mu^2*L_i*L_max_i^2*NumFls^2*d_i*h_i+4*mu^2*
+               L_i*L_max_i^2*NumFls^2*d_i*f_i)*l)*v_i+4*mu^2*L_max_i^2*NumFls^2*d_i^2*l^2)+((-mu*L_i^2*NumFls*l*p_i+
+               L_i^2*l*n_i-mu*H_i*L_i*NumFls*l+mu*L_i^2*NumFls*h_i+mu*L_i^2*NumFls*f_i)*v_i-mu*L_i*NumFls*d_i*l)*
+               beta_i+(mu*L_i*L_max_i*NumFls*l*p_i-L_i*L_max_i*l*n_i+mu*H_i*L_max_i*NumFls*l-mu*L_i*L_max_i*NumFls*
+               h_i-mu*L_i*L_max_i*NumFls*f_i)*v_i+2*mu*L_max_i*NumFls*d_i*l)/(((2*mu*L_i^2*NumFls*l*p_i+2*mu*H_i*
+               L_i*NumFls*l)*v_i+2*mu*L_i*NumFls*d_i*l)*beta_i+(-2*mu*L_i*L_max_i*NumFls*l*p_i-2*mu*H_i*L_max_i*
+               NumFls*l)*v_i-4*mu*L_max_i*NumFls*d_i*l),
              stop(paste0('Foraging type: "',forageType,'" not found.'))
     )
   }
