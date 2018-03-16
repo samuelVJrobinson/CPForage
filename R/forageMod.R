@@ -29,10 +29,11 @@
 #'\code{world} should be a named list containing:
 #' \itemize{
 #' \item \code{mu}: nectar production values (per s); matrix
-#' \item \code{e}: flower density (per \eqn{m^2}); matrix
+#' \item \code{e}: energy value of nectar (J/\eqn{\mu}L); matrix
 #' \item \code{l}: maximum nectar standing crop (\eqn{\mu}L); matrix
 #' \item \code{f}: travel time between flowers (s); matrix
-#' \item \code{cellSize}: size of a patch (m)
+#' \item \code{flDens}: flower count per cell; matrix
+#' \item \code{cellSize}: size of a cell (m)
 #' \item \code{forageType}: foraging type. See \code{\link{curr}}.
 #' }
 #'
