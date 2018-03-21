@@ -79,7 +79,7 @@
 #'            cellSize=cellSize) #Empty world
 #'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
 #'canola-filled cells
-#'world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
+#'world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 #'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 #'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 #'world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
@@ -213,9 +213,9 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
       #Number of foragers where S goes to Smin (essentially upper limit to step size)
       #Simulation indicates that Smin should optimally be around 0.18 for multi-core, 0.3 for serial runs.
       maxn=optimize(maxNfun,interval=c(0,max(nests[[i]]$n)),fakeNests=fakeNests,
-                    fakeWorld=fakeWorld,i=i,eps=ifelse(parallel,0.177,0.3))$min
-      #Simulation indicates that phi should be 0.6 for multi-core, 4.3 for serial run
-      nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,ifelse(parallel,0.6,4.3))))) #Initial distribution
+                    fakeWorld=fakeWorld,i=i,eps=0.7)$min
+      #Simulation indicates that phi should be around 4.3, Smin around 0.7
+      nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,4.3)))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end
       #Cuts off anything step size above maxN, making maxN the largest possible step
       nests[[i]]$steps=c(floor(maxn),nests[[i]]$steps[nests[[i]]$steps<maxn])
