@@ -213,7 +213,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
       #Number of foragers where S goes to Smin (essentially upper limit to step size)
       #Simulation indicates that Smin should optimally be around 0.18 for multi-core, 0.3 for serial runs.
       maxn=optimize(maxNfun,interval=c(0,max(nests[[i]]$n)),fakeNests=fakeNests,
-                    fakeWorld=fakeWorld,i=i,eps=0.7)$min
+                    fakeWorld=fakeWorld,i=i,eps=0.5)$min
       #Simulation indicates that phi should be around 4.3, Smin around 0.7
       nests[[i]]$steps=round(nforagers*1/(10^(seq(1,10,4.3)))) #Initial distribution
       nests[[i]]$steps=c(nests[[i]]$steps[nests[[i]]$steps>1],1) #Gets rid of numbers less than 2, and adds a 1 to the end

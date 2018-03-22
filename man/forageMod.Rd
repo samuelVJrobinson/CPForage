@@ -47,10 +47,11 @@ this only works for individual aggregations of CP foragers.
 \code{world} should be a named list containing:
 \itemize{
 \item \code{mu}: nectar production values (per s); matrix
-\item \code{e}: flower density (per \eqn{m^2}); matrix
+\item \code{e}: energy value of nectar (J/\eqn{\mu}L); matrix
 \item \code{l}: maximum nectar standing crop (\eqn{\mu}L); matrix
 \item \code{f}: travel time between flowers (s); matrix
-\item \code{cellSize}: size of a patch (m)
+\item \code{flDens}: flower count per cell; matrix
+\item \code{cellSize}: size of a cell (m)
 \item \code{forageType}: foraging type. See \code{\link{curr}}.
 }
 
@@ -94,7 +95,7 @@ world1<-list(mu=matrix(0,120,120),
            cellSize=cellSize) #Empty world
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
 canola-filled cells
-world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
+world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F

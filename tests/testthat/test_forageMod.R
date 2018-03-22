@@ -2,7 +2,7 @@ context('Full function (forageMod)')
 
 #Create test world for run
 nu_i<-0.15/3600 #Nectar production/hr for a single flower
-flDens<-520 #Flower density/m2
+flDens<-100 #Flower density/m2 - represents early canola bloom
 e_i<-14.35 #Energetic value/unit
 l_i<-0.87 #Canola standing crop (0.87uL)
 f_i<-0.86 #Inter-flower flight time
@@ -18,7 +18,7 @@ world1<-list(mu=matrix(0,worldSize/cellSize,worldSize/cellSize),  #Empty world
            forageType='random') #Competition for flowers within patch
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
 # canola-filled cells
-world1$flDens[c(2:11),c(2:11)]<-flDens #Flower number per cell
+world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
@@ -39,6 +39,10 @@ nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=hone
 #Run full model (serial)
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
+#Nest structure (solitary efficiency maximizers)
+nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,eps=1e-10))
+testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
+
 test_that("Results in correct format",{
   expect_length(testOutput1,2) #Nest and world list
   expect_length(testOutput1$nests,1) #Single nest
@@ -47,9 +51,15 @@ test_that("Results in correct format",{
 })
 
 test_that("Results are consistent",{
-  expect_equal(testOutput1$world$S[5,5],0.4253825,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],10) #n
+  #World 1
+  expect_equal(testOutput1$world$S[5,5],0.8849992,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],14) #n
   expect_equal(testOutput1$nests[[1]]$L[5,5],59.49993,tol=1e-4) #L
+
+  #World 2
+  expect_equal(testOutput2$world$S[4,4],0.8264798,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests[[1]]$n[4,4],37) #n
+  expect_equal(testOutput2$nests[[1]]$L[4,4],43.75367,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{

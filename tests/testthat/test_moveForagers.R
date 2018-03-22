@@ -34,13 +34,13 @@ scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Currency calculations work properly',{
   #Starting scenario set
-  expect_equal(scenSet$base$world$S,matrix(c(0.7878416,0.6425045,0.5346461),1),tol=1e-4) #S
+  expect_equal(scenSet$base$world$S,matrix(c(0.780695,0.633817,0.5257643),1),tol=1e-4) #S
   expect_equal(scenSet$base$nests[[1]]$n,matrix(c(5,10,15),1)) #n
-  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(44.37405,48.85215,50.99944),1),tol=1e-4) #L
-  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(232.7213,166.1487,128.8397),1),tol=1e-4) #curr
+  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(47.45832,52.16618,54.435),1),tol=1e-4) #L
+  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(244.6734,174.3612,135.0409),1),tol=1e-4) #curr
 
   expect_equal(scenSet$best$nests[[1]]$n,matrix(c(10,15,20),1),tol=1e-4) #n in Best scenario
-  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(212.1165,152.6297,119.3454),1),tol=1e-4) #curr in Best scenario
+  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(222.4902,159.9383,124.9776),1),tol=1e-4) #curr in Best scenario
 
   #Solitary foraging case:
   moves=whichMoves(scenSet,1) #What moves should foragers make?
@@ -71,9 +71,6 @@ test_that('Currency calculations work properly',{
   newScenSet=moveForagers(newScenSet,1,moves) #Move foragers and save scenario set
   moves=whichMoves(newScenSet,1) #What moves should foragers make?
   expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
-  newScenSet=moveForagers(newScenSet,1,moves) #Move foragers and save scenario set
-  moves=whichMoves(newScenSet,1) #What moves should foragers make?
-  expect_equal(list(move=T,from=matrix(c(F,T,F),1),to=matrix(c(T,F,F),1)),moves) #From cell 2 to 1
   newScenSet=moveForagers(newScenSet,1,moves) #Move foragers and save scenario set
   moves=whichMoves(newScenSet,1) #What moves should foragers make?
   expect_equal(list(move=F,from=NA,to=NA),moves) #No move. Has reached fixation
