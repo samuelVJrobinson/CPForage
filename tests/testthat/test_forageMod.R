@@ -8,12 +8,12 @@ l_i<-0.87 #Canola standing crop (0.87uL)
 f_i<-0.86 #Inter-flower flight time
 #World structure
 cellSize<-10 #10m cells (100m^2)
-worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth nothing)
-world1<-list(mu=matrix(0,worldSize/cellSize,worldSize/cellSize),  #Empty world
-           flDens=matrix(0,worldSize/cellSize,worldSize/cellSize),
-           e=matrix(0,worldSize/cellSize,worldSize/cellSize),
-           l=matrix(0,worldSize/cellSize,worldSize/cellSize),
-           f=matrix(0,worldSize/cellSize,worldSize/cellSize),
+worldSize<-120 #120x120m field (100x100m field with 10m buffer zone with weeds in it)
+world1<-list(mu=matrix(1/3600,worldSize/cellSize,worldSize/cellSize),  #Weeds produce 1uL/hr
+           flDens=matrix(5*(cellSize^2),worldSize/cellSize,worldSize/cellSize), #5 fls/m2
+           e=matrix(8,worldSize/cellSize,worldSize/cellSize), #worth about 75% of canola
+           l=matrix(3,worldSize/cellSize,worldSize/cellSize), #max nectar = 3uL
+           f=matrix(5,worldSize/cellSize,worldSize/cellSize), #5 second flight time b/w fls
            cellSize=cellSize,
            forageType='random') #Competition for flowers within patch
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
@@ -52,14 +52,14 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.8849992,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],14) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],59.49993,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.938245,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],15) #n
+  expect_equal(testOutput1$nests[[1]]$L[5,5],59.49996,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.8264798,tol=1e-4) #S-value
+  expect_equal(testOutput2$world$S[4,4],0.8638928,tol=1e-4) #S-value
   expect_equal(testOutput2$nests[[1]]$n[4,4],37) #n
-  expect_equal(testOutput2$nests[[1]]$L[4,4],43.75367,tol=1e-4) #L
+  expect_equal(testOutput2$nests[[1]]$L[4,4],46.70327,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{

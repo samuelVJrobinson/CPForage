@@ -20,70 +20,68 @@ params=list(L_i=59.5,
 test_that('Summed currency works properly',{
   #Efficiency, using omniscient foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='omniscient')),213.2738,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='omniscient')),213.2738,tol=1e-4)
   #Efficiency, using random foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='random')),173.3794,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='random')),178.7284,tol=1e-4)
   #Efficiency, using NN foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='nn')),173.3794,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='nn')),178.7284,tol=1e-4)
 
   #Net rate, using omniscient foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='omniscient')),2.598763,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='omniscient')),2.598763,tol=1e-4)
   #Net rate, using random foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='random')),2.049211,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='random')),2.12097,tol=1e-4)
   #Net rate, using NN foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='nn')),2.049211,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='nn')),2.12097,tol=1e-4)
 })
 
 test_that('Individual currency and S-values work properly',{
   #Efficiency with 1 nest
   effRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                   c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
+                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
   expect_equal(length(effRes1),2)
-  expect_equal(effRes1[['S']],0.6167597,tol=1e-4)
-  expect_equal(effRes1[['eff']],173.3794,tol=1e-4)
+  expect_equal(effRes1[['S']],0.6570083,tol=1e-4)
+  expect_equal(effRes1[['eff']],178.7284,tol=1e-4)
 
   #Same thing, but 200 foragers
   effRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=F,forageType='random'))
   expect_equal(length(effRes2),2)
-  expect_equal(effRes2[['S']],0.04695388,tol=1e-4)
-  expect_equal(effRes2[['eff']],24.28855,tol=1e-4)
+  expect_equal(effRes2[['S']],0.05182226,tol=1e-4)
+  expect_equal(effRes2[['eff']],26.69644,tol=1e-4)
 
   #Net rate with 1 nests
   ratRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
   expect_equal(length(ratRes1),2)
-  expect_equal(ratRes1[['S']],0.6167597,tol=1e-4)
-  expect_equal(ratRes1[['rat']],2.049211,tol=1e-4)
+  expect_equal(ratRes1[['S']],0.6570083,tol=1e-4)
+  expect_equal(ratRes1[['rat']],2.12097,tol=1e-4)
 
   #Same thing, but 200 foragers
   ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random'))
   expect_equal(length(ratRes2),2)
-  expect_equal(ratRes2[['S']],0.04695388,tol=1e-4)
-  expect_equal(ratRes2[['rat']],0.258109,tol=1e-4)
+  expect_equal(ratRes2[['S']],0.05182226,tol=1e-4)
+  expect_equal(ratRes2[['rat']],0.2841601,tol=1e-4)
 
   #NN foraging:
   #Net rate with 1 nests
   ratRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='nn'))
   expect_equal(length(ratRes1),2)
-  expect_equal(ratRes1[['S']],0.6167597,tol=1e-4)
-  expect_equal(ratRes1[['rat']],2.049211,tol=1e-4)
+  expect_equal(ratRes1[['S']],0.6570083,tol=1e-4)
+  expect_equal(ratRes1[['rat']],2.12097,tol=1e-4)
 
   #Same thing, but 200 foragers
   ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='nn'))
   expect_equal(length(ratRes2),2)
-  expect_equal(ratRes2[['S']],0.04695388,tol=1e-4)
-  expect_equal(ratRes2[['rat']],0.258109,tol=1e-4)
-  ratRes1 <- with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                              c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='nn'))
+  expect_equal(ratRes2[['S']],0.05182226,tol=1e-4)
+  expect_equal(ratRes2[['rat']],0.2841601,tol=1e-4)
 
   #NN foraging, but with large numbers of flowers (90000) relative to foragers (3). S should be 1.
   ratRes3 <- with(params,curr(L_i,L_max_i,n_i=3,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
@@ -92,12 +90,12 @@ test_that('Individual currency and S-values work properly',{
   expect_equal(ratRes3[['S']],1,tol=1e-4)
   expect_equal(ratRes3[['rat']],2.598763,tol=1e-4)
 
-  #However, this should not be true with random foragers. S should be 0.88.
+  #However, this should not be true with random foragers. S should be 0.92.
   ratRes4 <- with(params,curr(L_i,L_max_i,n_i=3,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls=400*15^2,whatCurr_i='rat',sumAll=F,forageType='random'))
   expect_equal(length(ratRes4),2)
-  expect_equal(ratRes4[['S']],0.8877302,tol=1e-4)
-  expect_equal(ratRes4[['rat']],2.464368,tol=1e-4)
+  expect_equal(ratRes4[['S']],0.929516,tol=1e-4)
+  expect_equal(ratRes4[['rat']],2.516484,tol=1e-4)
 })
 
 
@@ -127,8 +125,62 @@ test_that('Exception handling (limited - mostly in optimLoadCurr)',{
 #   abline(h=1,lty='dashed')
 # }
 # legend('bottomright',c('4','3','2'),fill=c('black','blue','green'),title='Number of foragers')
-
-
-
-
+#
+# #Demo of NN foraging with n foragers, across varying load sizes and flower numbers
+# par(mfrow=c(2,3))
+# for(ft in c('nn','random')){
+#   for(div in 1:3){
+#     plot(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=400*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),xlab='n foragers',ylab='S',type='p',pch=19,ylim=c(0,1),
+#     main=paste(ft,'foraging,','load/',div,sep=' '))
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=200*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='blue',pch=19)
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=50*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='green',pch=19)
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=5*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='red',pch=19)
+#
+#     abline(h=1,lty='dashed')
+#   }
+# }
+# legend('topright',c('400','200','50','5'),fill=c('black','blue','green','red'),title='Flowers per m2')
+#
+# #Same thing, but with higher mu and l
+#
+# params$mu <- 1/3600 #1 uL/hr
+# params$l <- 3 #3 uL max nectar
+#
+# par(mfrow=c(2,3))
+# for(ft in c('nn','random')){
+#   for(div in 1:3){
+#     plot(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=400*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),xlab='n foragers',ylab='S',type='p',pch=19,ylim=c(0,1),
+#     main=paste(ft,'foraging,','load/',div,sep=' '))
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=200*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='blue',pch=19)
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=50*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='green',pch=19)
+#     points(seq(1,100,1),sapply(seq(1,100,1),function(x) {
+#       with(params,curr(L_i/div,L_max_i,n_i=x,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+#                        c_i,c_f,mu,l,e,NumFls=5*(10^2),whatCurr_i='rat',sumAll=F,forageType=ft))[2]
+#     }),col='red',pch=19)
+#
+#     abline(h=1,lty='dashed')
+#   }
+# }
+# legend('topright',c('400','200','50','5'),fill=c('black','blue','green','red'),title='Flowers per m2')
 
