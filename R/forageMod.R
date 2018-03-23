@@ -256,10 +256,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
     occupied=nests[[i]]$n>0
     temp=optimLoadCurr(which(occupied),list(nests=nests,world=world)) #Optimizes Load and Rate for occupied cells in nest i
     world$S[occupied]=temp$S #S-value
-    for(name in names(temp$optimCurr)){
-      nests[[name]][['L']][occupied]=temp[['optimL']][[name]] #Assigns L
-      nests[[name]][['curr']][occupied]=temp[['optimCurr']][[name]] #Assigns currency
-    }
+    nests[[i]][['L']][occupied]=temp[['optimL']][[i]] #Assigns L
+    nests[[i]][['curr']][occupied]=temp[['optimCurr']][[i]] #Assigns currency
   }
 
   #Idea:
