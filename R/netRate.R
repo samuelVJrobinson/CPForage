@@ -28,14 +28,24 @@
 netRate=function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S){
   #Rate=(Gains-ForagingLoss-Travel Loss - Hive Loss)/(Travel Time + Foraging Time + Hive Time)
 
-  #L=L_max #Rate maximizers "should" always take largest load, unless S is high (at that point netrate(small load)=netrate(large load))
+  #Rate maximizers "should" always take largest load, unless S is high (at that point netrate(small load)=netrate(large load))
   Gains=L*e
-  FlightLoss=(d*c_f/v)*(2+alpha(c_f,L_max,e)*(L/L_max))
-  ForagingLoss=((L*S*c_f*f*l+L^2*c_f*f)*alpha(c_f,L_max,e)+2*L*L_max*S*c_i*l*p_i+2*L*L_max*c_i*h)/(2*L_max*S*l)
-  HiveLoss=c_i*H
+  FlightLoss= (c_f*d*(L*alpha(c_f,L_max,e)+L_max))/(L_max*v)
+  FlightTime=(d*(L*beta-2*L_max))/(v*(L*beta-L_max))
 
-  FlightTime=(d/v)*((2-beta*L/L_max)/(1-beta*L/L_max))
-  ForagingTime=(L*(S*l*p_i+h+f))/(S*l)
+  ForageLossHandling=(L*c_i*(S*l*p_i+h))/(S*l)
+  ForageTimeHandling=L*(S*l*p_i+h)/S*l
+
+  if(L/S*l<2){ #If less than 2 flowers are visited
+    ForageLossFlying = ForageTimeFlying = 0  #Only 1 flower visited, so no intra-patch movement needed
+  } else {
+    ForageLossFlying=(S*c_f*f*(L/(S*l)+(L/(S*l)-1)^2-1)*l*alpha(c_f,L_max,e))/(2*L_max)
+    ForageTimeFlying=sum(f*(1/(1-S*seq(1,(L/S*l-1),1)*l*beta/L_max))) #No simple solution; sum across terms
+  }
+
+  ForagingLoss=ForageLossHandling+ForageLossFlying
+  ForagingTime=ForageTimeHandling+ForageTimeFlying
+  HiveLoss=c_i*H
   HiveTime=H
   return((Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightTime+ForagingTime+HiveTime))
 }

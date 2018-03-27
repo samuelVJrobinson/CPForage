@@ -5,12 +5,12 @@ nu_i<-0.15/3600 #Nectar production/hr for a single flower
 flDens<-100 #Flower density/m2 - represents early canola bloom
 e_i<-14.35 #Energetic value/unit
 l_i<-0.87 #Canola standing crop (0.87uL)
-f_i<-0.86 #Inter-flower flight time
+f_i<-3 #Inter-flower flight time
 #World structure
 cellSize<-10 #10m cells (100m^2)
 worldSize<-120 #120x120m field (100x100m field with 10m buffer zone with weeds in it)
 world1<-list(mu=matrix(1/3600,worldSize/cellSize,worldSize/cellSize),  #Weeds produce 1uL/hr
-           flDens=matrix(5*(cellSize^2),worldSize/cellSize,worldSize/cellSize), #5 fls/m2
+           flDens=matrix(3*(cellSize^2),worldSize/cellSize,worldSize/cellSize), #1 fls/m2
            e=matrix(8,worldSize/cellSize,worldSize/cellSize), #worth about 75% of canola
            l=matrix(3,worldSize/cellSize,worldSize/cellSize), #max nectar = 3uL
            f=matrix(5,worldSize/cellSize,worldSize/cellSize), #5 second flight time b/w fls
@@ -34,13 +34,15 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       H=100) #Time spent in the hive (s)
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants,eps=1e-10))
+nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants,eps=0,
+                        steps=c(5,1)))
 
 #Run full model (serial)
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (solitary efficiency maximizers)
-nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,eps=1e-10))
+nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
+                        eps=0,steps=c(5,1)))
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 
 test_that("Results in correct format",{
@@ -52,14 +54,14 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.938245,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],15) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],59.49996,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.9542338,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],16) #n
+  expect_equal(testOutput1$nests[[1]]$L[5,5],59.22828,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.8638928,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests[[1]]$n[4,4],37) #n
-  expect_equal(testOutput2$nests[[1]]$L[4,4],46.70327,tol=1e-4) #L
+  expect_equal(testOutput2$world$S[4,4],0.9607663,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests[[1]]$n[4,4],17) #n
+  expect_equal(testOutput2$nests[[1]]$L[4,4],28.00764,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{
@@ -74,3 +76,34 @@ test_that('forageMod error handling works',{
   world2$mu <- NULL #Get rid of world argument
   expect_error(forageMod(world2,nests1,2000,verbose=F,parallel=F))
 })
+
+# #Plot results from test1
+# library(raster)
+# n <- raster(testOutput1$nests[[1]]$n)
+# L <- raster(testOutput1$nests[[1]]$L)
+# curr <- raster(testOutput1$nests[[1]]$curr)
+# loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
+# mu <- raster(testOutput1$world$mu)
+# flDens <- raster(testOutput1$world$flDens)
+# e <- raster(testOutput1$world$e)
+# l <- raster(testOutput1$world$l)
+# f <- raster(testOutput1$world$f)
+# S <- raster(testOutput1$world$S)
+# resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
+# names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
+# plot(resStack)
+#
+# #Plot results from test2
+# n <- raster(testOutput2$nests[[1]]$n)
+# L <- raster(testOutput2$nests[[1]]$L)
+# curr <- raster(testOutput2$nests[[1]]$curr)
+# loadingTime <- raster(testOutput2$nests[[1]]$loadingTime)
+# mu <- raster(testOutput2$world$mu)
+# flDens <- raster(testOutput2$world$flDens)
+# e <- raster(testOutput2$world$e)
+# l <- raster(testOutput2$world$l)
+# f <- raster(testOutput2$world$f)
+# S <- raster(testOutput2$world$S)
+# resStack2 <- brick(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
+# names(resStack2) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
+# plot(resStack2)

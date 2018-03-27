@@ -25,7 +25,15 @@
 efficiency=function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,S){
   Gains=L*e
   FlightLoss=(d*c_f/v)*(2+alpha(c_f,L_max,e)*(L/L_max))
-  ForagingLoss=((L*S*c_f*f*l+L^2*c_f*f)*alpha(c_f,L_max,e)+2*L*L_max*S*c_i*l*p_i+2*L*L_max*c_i*h)/(2*L_max*S*l)
+  ForageLossHandling=L*c_i*(S*l*p_i+h)/S*l
+
+  if(L/S*l<1){
+    ForageLossFlying = 0  #Only 1 flower visited, so no intra-patch movement needed
+  } else {
+    ForageLossFlying=(S*c_f*f*(L/(S*l)+(L/(S*l)-1)^2-1)*l*alpha(c_f,L_max,e))/(2*L_max)
+  }
+
+  ForagingLoss=ForageLossHandling+ForageLossFlying
   HiveLoss=c_i*H
   return((Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightLoss+ForagingLoss+HiveLoss))
 }

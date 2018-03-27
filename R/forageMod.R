@@ -176,6 +176,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
     nests[[i]]$n[nests[[i]]$yloc,nests[[i]]$xloc]=nforagers #Places foragers next to nest
     #Calculates absolute distance of each cell from nest
     nests[[i]]$d=sqrt((((row(world[[1]])-nests[[i]]$yloc)*world$cellSize)^2)+(((col(world[[1]])-nests[[i]]$xloc)*world$cellSize)^2))
+    nests[[i]]$d=nests[[i]]$d+min(nests[[i]]$d[nests[[i]]$d!=0])/2 #Adds half minimum distance (prevents 0 flying distance)
     #Empty matrix of loading rate, Load, and currency to be maximized (Rate or Eff)
     nests[[i]]$L=matrix(0,nrow(world[[1]]),ncol(world[[1]])) #Load size (L)
     nests[[i]]$L[nests[[i]]$yloc,nests[[i]]$xloc]=nests[[i]]$L_max #Sets Load size to maximum (initially)
