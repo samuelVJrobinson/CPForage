@@ -128,7 +128,7 @@ whichMoves=function(scenarioSet=NA,i=NA){ #Using nest i in scenarioSet, return l
     #Location of cell with the least effect of subtracting TRANSFER foragers - Worst cell (best cell to move FROM)
     worst=which(transferable==min(transferable,na.rm=T),arr.ind=T)
 
-    if(length(worst)>2) worst=worst[1,] #If there are more than 1 worst cells, choose the first
+    if(nrow(worst)>1) worst=worst[which.max(nests[[i]]$d[worst]),] #If there are more than 1 worst cells, choose the furthest
     use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
     use[worst[1],worst[2]]=T
     worst=use #Location of worst cell
@@ -140,7 +140,7 @@ whichMoves=function(scenarioSet=NA,i=NA){ #Using nest i in scenarioSet, return l
     diff2=bestNests[[i]]$curr*bestNests[[i]]$n-nests[[i]]$curr*nests[[i]]$n
     #Location of cell with the greatest effect of adding TRANSFER foragers - best cell to move TO
     best=which(diff2==max(diff2,na.rm=T),arr.ind=T)
-    if(length(best)>2) best=best[1,] #If there are more than 1 best cells, choose the first
+    if(nrow(best)>1) best=best[which.min(nests[[i]]$d[best]),] #If there are more than 1 best cells, choose the nearest
     bestNests[[i]]$curr[worst]=worstCurr #Resets currency
     use=matrix(F,nrow(nests[[i]]$n),ncol(nests[[i]]$n)) #Location matrix
     use[best[1],best[2]]=T

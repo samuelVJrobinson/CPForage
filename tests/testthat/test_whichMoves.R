@@ -41,9 +41,4 @@ test_that('Move calculations work properly',{
   scenSet$worst$nests[[1]]$sol=F
   moves=whichMoves(scenSet,1)
   expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
-
 })
-
-
-
-

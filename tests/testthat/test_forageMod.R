@@ -35,14 +35,14 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
 
 #Nest structure (social rate maximizers)
 nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants,eps=0,
-                        steps=c(5,1)))
+                        steps=c(50,5,1)))
 
 #Run full model (serial)
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (solitary efficiency maximizers)
 nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
-                        eps=0,steps=c(5,1)))
+                        eps=0,steps=c(50,5,1)))
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 
 test_that("Results in correct format",{
@@ -54,8 +54,8 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.9542338,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],16) #n
+  expect_equal(testOutput1$world$S[5,5],0.8783896,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],45) #n
   expect_equal(testOutput1$nests[[1]]$L[5,5],59.22828,tol=1e-4) #L
 
   #World 2
@@ -77,21 +77,21 @@ test_that('forageMod error handling works',{
   expect_error(forageMod(world2,nests1,2000,verbose=F,parallel=F))
 })
 
-# #Plot results from test1
-# library(raster)
-# n <- raster(testOutput1$nests[[1]]$n)
-# L <- raster(testOutput1$nests[[1]]$L)
-# curr <- raster(testOutput1$nests[[1]]$curr)
-# loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
-# mu <- raster(testOutput1$world$mu)
-# flDens <- raster(testOutput1$world$flDens)
-# e <- raster(testOutput1$world$e)
-# l <- raster(testOutput1$world$l)
-# f <- raster(testOutput1$world$f)
-# S <- raster(testOutput1$world$S)
-# resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
-# names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
-# plot(resStack)
+#Plot results from test1
+library(raster)
+n <- raster(testOutput1$nests[[1]]$n)
+L <- raster(testOutput1$nests[[1]]$L)
+curr <- raster(testOutput1$nests[[1]]$curr)
+loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
+mu <- raster(testOutput1$world$mu)
+flDens <- raster(testOutput1$world$flDens)
+e <- raster(testOutput1$world$e)
+l <- raster(testOutput1$world$l)
+f <- raster(testOutput1$world$f)
+S <- raster(testOutput1$world$S)
+resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
+names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
+plot(resStack)
 #
 # #Plot results from test2
 # n <- raster(testOutput2$nests[[1]]$n)
