@@ -54,9 +54,9 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.8783896,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],45) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],59.22828,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.965472,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],12) #n
+  expect_equal(testOutput1$nests[[1]]$L[5,5],58.81608,tol=1e-4) #L
 
   #World 2
   expect_equal(testOutput2$world$S[4,4],0.9607663,tol=1e-4) #S-value
@@ -76,22 +76,21 @@ test_that('forageMod error handling works',{
   world2$mu <- NULL #Get rid of world argument
   expect_error(forageMod(world2,nests1,2000,verbose=F,parallel=F))
 })
-
-#Plot results from test1
-library(raster)
-n <- raster(testOutput1$nests[[1]]$n)
-L <- raster(testOutput1$nests[[1]]$L)
-curr <- raster(testOutput1$nests[[1]]$curr)
-loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
-mu <- raster(testOutput1$world$mu)
-flDens <- raster(testOutput1$world$flDens)
-e <- raster(testOutput1$world$e)
-l <- raster(testOutput1$world$l)
-f <- raster(testOutput1$world$f)
-S <- raster(testOutput1$world$S)
-resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
-names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
-plot(resStack)
+# #Plot results from test1
+# library(raster)
+# n <- raster(testOutput1$nests[[1]]$n)
+# L <- raster(testOutput1$nests[[1]]$L)
+# curr <- raster(testOutput1$nests[[1]]$curr)
+# loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
+# mu <- raster(testOutput1$world$mu)
+# flDens <- raster(testOutput1$world$flDens)
+# e <- raster(testOutput1$world$e)
+# l <- raster(testOutput1$world$l)
+# f <- raster(testOutput1$world$f)
+# S <- raster(testOutput1$world$S)
+# resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
+# names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
+# plot(resStack)
 #
 # #Plot results from test2
 # n <- raster(testOutput2$nests[[1]]$n)
