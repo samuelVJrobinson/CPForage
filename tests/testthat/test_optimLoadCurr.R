@@ -16,9 +16,9 @@ test_that('Currency calculations work properly',{
   #Efficiency maximizers
   test1<-optimLoadCurr(u,scenario)
 
-  expect_equal(test1$optimL,4.960216,tol=1e-04)
-  expect_equal(test1$optimCurr,40.31555,tol=1e-04)
-  expect_equal(test1$S,0.03390579,tol=1e-04)
+  expect_equal(test1$optimL,0.4887617,tol=1e-04)
+  expect_equal(test1$optimCurr,-0.4201206,tol=1e-04)
+  expect_equal(test1$S,0.0002740845,tol=1e-04)
 
   #Rate maximizers
   scenario$nests[[1]]$whatCurr='rat'
@@ -26,9 +26,9 @@ test_that('Currency calculations work properly',{
 
   #Despite having a theoretical load size of L_max, rate-maximizers have similar
   #optimal Load size to efficiency-maximizers (at least a high forager numbers)
-  expect_equal(test1b$optimL,5.849864,tol=1e-04)
-  expect_equal(test1b$optimCurr,0.1534608,tol=1e-04)
-  expect_equal(test1b$S,0.03249948,tol=1e-04)
+  expect_equal(test1b$optimL,0.4253075,tol=1e-04)
+  expect_equal(test1b$optimCurr,-0.001158748,tol=1e-04)
+  expect_equal(test1b$S,0.0002750844,tol=1e-04)
 
   #Omniscient foraging style:
 
@@ -38,17 +38,17 @@ test_that('Currency calculations work properly',{
 
   test1<-optimLoadCurr(u,scenario)
 
-  expect_equal(test1$optimL,4.915216,tol=1e-04)
-  expect_equal(test1$optimCurr,41.57856,tol=1e-04)
-  expect_equal(test1$S,0.03558491,tol=1e-04)
+  expect_equal(test1$optimL,0.4887586,tol=1e-04)
+  expect_equal(test1$optimCurr,-0.4199652,tol=1e-04)
+  expect_equal(test1$S,0.0002741615,tol=1e-04)
 
   #Rate maximizers
   scenario$nests[[1]]$whatCurr='rat'
   test1b<-optimLoadCurr(u,scenario)
 
-  expect_equal(test1b$optimL,3.829031,tol=1e-04)
-  expect_equal(test1b$optimCurr,0.1591767,tol=1e-04)
-  expect_equal(test1b$S,0.03907221,tol=1e-04)
+  expect_equal(test1b$optimL,0.4310464,tol=1e-04)
+  expect_equal(test1b$optimCurr,-0.001158314,tol=1e-04)
+  expect_equal(test1b$S,0.0002750593,tol=1e-04)
 
 })
 

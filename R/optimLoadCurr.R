@@ -54,7 +54,7 @@ optimLoadCurr=function(u,scenario){
                c_i=nests[[1]]$c_i,
                c_f=nests[[1]]$c_f,
                whatCurr_i=nests[[1]]$whatCurr,
-               mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=with(world,flDens[u]*cellSize^2),
+               mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=world$flDens[u],
                forageType=world$forageType)
 
 
@@ -90,6 +90,7 @@ optimLoadCurr=function(u,scenario){
   #                             control=list(fnscale=-1)),arglist))$par
 
   #Best currency given optimum load, and S-value for the cell
+  #NOTE: this works for both solitary and social, because it calculates (currency | n) - i.e. n is dealt with elsewhere
   currencyS=do.call(curr,c(list(L=optimL$maximum,sumAll=F),arglist)) #Named vector of currency and S-values
   optimCurr=currencyS[[1]]
   S=currencyS[[2]]

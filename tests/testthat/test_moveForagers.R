@@ -34,13 +34,13 @@ scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Currency calculations work properly',{
   #Starting scenario set
-  expect_equal(scenSet$base$world$S,matrix(c(0.8125399,0.6625386,0.5502804),1),tol=1e-4) #S
+  expect_equal(scenSet$base$world$S,matrix(c(0.02329789,0.01104082,0.007221139),1),tol=1e-4) #S
   expect_equal(scenSet$base$nests[[1]]$n,matrix(c(5,10,15),1)) #n
-  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(50.34111,55.72236,58.30368),1),tol=1e-4) #L
-  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(252.7521,180.0787,139.3972),1),tol=1e-4) #curr
+  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(7.106176,6.731574,6.606116),1),tol=1e-4) #L
+  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(26.39603,12.96529,8.370729),1),tol=1e-4) #curr
 
   expect_equal(scenSet$best$nests[[1]]$n,matrix(c(10,15,20),1),tol=1e-4) #n in Best scenario
-  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(229.5901,165.0351,128.9028),1),tol=1e-4) #curr in Best scenario
+  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(14.58132,9.050332,6.423796),1),tol=1e-4) #curr in Best scenario
 
   #Solitary foraging case:
   moves=whichMoves(scenSet,1) #What moves should foragers make?
@@ -66,12 +66,6 @@ test_that('Currency calculations work properly',{
   expect_false(newScenSet$base$nests$nest1$curr[3]==scenSet$base$nests$nest1$curr[3]) #curr
 
   #Move to fixation.
-  moves=whichMoves(newScenSet,1) #What moves should foragers make?
-  expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
-  newScenSet=moveForagers(newScenSet,1,moves) #Move foragers and save scenario set
-  moves=whichMoves(newScenSet,1) #What moves should foragers make?
-  expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
-  newScenSet=moveForagers(newScenSet,1,moves) #Move foragers and save scenario set
   moves=whichMoves(newScenSet,1) #What moves should foragers make?
   expect_equal(list(move=F,from=NA,to=NA),moves) #No move. Has reached fixation
 })

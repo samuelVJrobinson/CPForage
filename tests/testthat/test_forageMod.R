@@ -2,7 +2,7 @@ context('Full function (forageMod)')
 
 #Create test world for run
 nu_i<-0.15/3600 #Nectar production/hr for a single flower
-flDens<-100 #Flower density/m2 - represents early canola bloom
+flDens<-200 #Flower density/m2 - represents early canola bloom
 e_i<-14.35 #Energetic value/unit
 l_i<-0.87 #Canola standing crop (0.87uL)
 f_i<-3 #Inter-flower flight time
@@ -34,7 +34,7 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       H=100) #Time spent in the hive (s)
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants,eps=0,
+nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,constants=honeybeeConstants,eps=0,
                         steps=c(50,5,1)))
 
 #Run full model (serial)
@@ -54,14 +54,14 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.965472,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],12) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],58.81608,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.3430696,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests[[1]]$n[5,5],10) #n
+  expect_equal(testOutput1$nests[[1]]$L[5,5],53.23488,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.9607663,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests[[1]]$n[4,4],17) #n
-  expect_equal(testOutput2$nests[[1]]$L[4,4],28.00764,tol=1e-4) #L
+  expect_equal(testOutput2$world$S[4,4],0.2928803,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests[[1]]$n[4,4],16) #n
+  expect_equal(testOutput2$nests[[1]]$L[4,4],13.22455,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{
