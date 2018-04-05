@@ -43,6 +43,7 @@ testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 #Nest structure (solitary efficiency maximizers)
 nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
                         eps=0,steps=c(50,5,1)))
+
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 
 test_that("Results in correct format",{

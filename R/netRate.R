@@ -40,7 +40,7 @@ netRate=function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S){
     ForageLossFlying = ForageTimeFlying = 0  #Only 1 flower visited, so no intra-patch movement needed
   } else {
     ForageLossFlying=(S*c_f*f*(L/(S*l)+(L/(S*l)-1)^2-1)*l*alpha(c_f,L_max,e))/(2*L_max)
-    ForageTimeFlying=sum(f*(1/(1-S*seq(1,(L/S*l-1),1)*l*beta/L_max))) #No simple solution; sum across terms
+    ForageTimeFlying=sum(f*(1/(1-S*(1:(L/S*l-1))*l*beta/L_max))) #No simple solution; sum across terms
   }
 
   ForagingLoss=ForageLossHandling+ForageLossFlying
