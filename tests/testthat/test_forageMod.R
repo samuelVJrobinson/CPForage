@@ -55,9 +55,9 @@ test_that("Results in correct format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.3430696,tol=1e-4) #S-value
+  expect_equal(testOutput1$world$S[5,5],0.3398925,tol=1e-4) #S-value
   expect_equal(testOutput1$nests[[1]]$n[5,5],10) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],53.23488,tol=1e-4) #L
+  expect_equal(testOutput1$nests[[1]]$L[5,5],59.49994,tol=1e-4) #L
 
   #World 2
   expect_equal(testOutput2$world$S[4,4],0.2928803,tol=1e-4) #S-value
