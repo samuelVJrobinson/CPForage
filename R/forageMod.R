@@ -54,6 +54,7 @@
 #' \item \code{c_f}: energetic cost of flight (J/s); numeric.
 #' \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 #' \item \code{H}: time spent in hive/aggregation (s); numeric.
+#' \item \code{alphaVal}: Alpha-value (5e-5 by default); numeric.
 #' }
 #' \item \code{eps}: accuracy to use for optimization; numeric.
 #' }
@@ -95,8 +96,9 @@
 #'                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
 #'                       and Edelstein Keshet 1998)
 #'                       c_i=0.0042, #Cost of non-flying activity
-#'                       H=100) #Time spent in the hive (s) (Seeley 1986 found
+#'                       H=100, #Time spent in the hive (s) (Seeley 1986 found
 #'                       100s and 70s for high and low intake rates)
+#'                       alphaVal=5e-05)
 #'
 #'#Nest structure (social rate maximizers)
 #'nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))
@@ -143,7 +145,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
     stopifnot(is.logical(nests[[i]]$sol)) #Solitary/social
     stopifnot(is.list(nests[[i]]$constants)) #Forager constants
     stopifnot(is.numeric(nests[[i]]$eps),nests[[i]]$eps>=0) #Eps term
-    if(any(!(names(nests[[i]]$constants) %in% c("L_max","v","beta","p_i","h","c_f","c_i","H")))){
+    if(any(!(c("L_max","v","beta","p_i","h","c_f","c_i","H") %in% names(nests[[i]]$constants)))){
       stop('Forager constants for each CPF nest require the following arguments:\n "L_max" "v" "beta" "p_i" "h" "c_f" "c_i" "H"')
     }
     if(any(sapply(nests[[i]]$constants,function(x) any(!c(is.numeric(x),x>0))))){

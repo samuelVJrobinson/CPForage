@@ -17,6 +17,7 @@
 #'@param H_i Time spent inside hive (s)
 #'@param beta Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param S Competition term (0-1)
+#'@param alphaVal Alpha-value (5e-5 by default)
 
 #'@return Currency, or vector of currencies
 #'
@@ -40,10 +41,10 @@
 #'            l,p_i,c_i,c_f,H,beta,S=1))
 #'with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
 #'            l,p_i,c_i,c_f,H,beta,S=0.5))
-getCurr=function(whatCurr,L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S){
+getCurr=function(whatCurr,L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S,alphaVal=5e-05){
   if(is.na(whatCurr)|is.null(whatCurr)) stop('Currency not defined')
   switch(whatCurr,
-         rat=netRate(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S),
-         eff=efficiency(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,S),
+         rat=netRate(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S,alphaVal),
+         eff=efficiency(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,S,alphaVal),
          stop(whatCurr,' Currency not defined'))
 }

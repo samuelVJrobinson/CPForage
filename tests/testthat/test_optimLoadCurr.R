@@ -2,7 +2,7 @@ context('Currency-load optimization function (optimLoadCurr)')
 
 nests<-list(nest1=list(xloc=1,yloc=1,n=382,whatCurr="eff",sol=FALSE,
              eps=0,L_max=59.5,v=7.8,beta=0.102,p_i=1,
-             h=1.5,c_f=0.05,c_i=0.0042,H=100,d=10,
+             h=1.5,c_f=0.05,c_i=0.0042,H=100,d=10,alphaVal=5e-05,
              L=59.5,curr=0))
 world<-list(mu=8.33e-05,flDens=520,e=14.3,l=1,
             f=0.86,cellSize=10,forageType='random',S=1)

@@ -20,6 +20,7 @@
 #'@param NumFls Number of flowers per patch
 #'@param sumAll Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.
 #'@param forageType Foraging style (see details below).
+#'@param alphaVal Alpha-value (5e-5 by default)
 #'
 #'@details \code{forageType} can be one of the following:
 #' \itemize{
@@ -59,7 +60,8 @@
 #'temp1[['S']] #Reduction in per-flower value
 
 
-curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,NumFls,sumAll=T,forageType='random'){
+curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,
+              NumFls,sumAll=T,forageType='random',alphaVal=5e-05){
   #Calculate S (competition term)
   if(L_i<=0){ #If Load is less than zero, S=1 (impossible to give back to patch)
     S=1
@@ -105,7 +107,7 @@ curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,
   # currs=mapply(getCurr,whatCurr=whatCurr_i, L=L_i,L_max=L_max_i, e=e, d=d_i, v=v_i, h=h_i,
   #              f=f_i, l=l, p_i=p_i, c_i=c_i, c_f=c_f, H=H_i, beta=beta_i,S)
   #Single-nest version
-  currs=getCurr(whatCurr_i,L_i,L_max_i,e,d_i,v_i,h_i,f_i,l,p_i,c_i,c_f,H_i,beta_i,S)
+  currs=getCurr(whatCurr_i,L_i,L_max_i,e,d_i,v_i,h_i,f_i,l,p_i,c_i,c_f,H_i,beta_i,S,alphaVal)
 
   #If sumAll is T, add all currencies together and return (useful for optimization of L).
   #Else, returns vector of currencies and S value for that cell (useful for generally returning currency)

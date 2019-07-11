@@ -4,7 +4,8 @@
 \alias{getCurr}
 \title{Get currency (or currencies)}
 \usage{
-getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S)
+getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
+  alphaVal = 5e-05)
 }
 \arguments{
 \item{whatCurr}{Currency to use. Must be either \code{"rat"} (net rate) or \code{"eff"} (efficiency)}
@@ -26,6 +27,8 @@ getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S)
 \item{beta}{Decrease in flight speed with load (m/s\eqn{\muL})}
 
 \item{S}{Competition term (0-1)}
+
+\item{alphaVal}{Alpha-value (5e-5 by default)}
 
 \item{d_i}{Distance from hive (m)}
 

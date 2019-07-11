@@ -31,11 +31,12 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       h=1.5, #Handling time per flower (s)
                       c_f=0.05, #Unloaded flight energetic cost (J/s)
                       c_i=0.0042, #Cost of non-flying activity
-                      H=100) #Time spent in the hive (s)
+                      H=100, #Time spent in the hive (s)
+                      alphaVal=5e-05) #Alpha value
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,constants=honeybeeConstants,eps=0,
-                        steps=c(50,5,1)))
+nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
+                        constants=honeybeeConstants,eps=0,steps=c(50,5,1)))
 
 #Run full model (serial)
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
@@ -49,7 +50,7 @@ testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 test_that("Results in correct format",{
   expect_length(testOutput1,2) #Nest and world list
   expect_length(testOutput1$nests,1) #Single nest
-  expect_length(testOutput1$nests[[1]],22) #22 elements within nest structure
+  expect_length(testOutput1$nests[[1]],23) #23 elements within nest structure
   expect_equal(dim(testOutput1$nests[[1]]$n),c(12,12)) #12 x 12 matrix
 })
 

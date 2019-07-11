@@ -4,7 +4,7 @@
 \alias{alpha}
 \title{Change in loaded flight cost (\eqn{\alpha})}
 \usage{
-alpha(c_f, L_max, e_i)
+alpha(c_f, L_max, e_i, alphaVal = 5e-05)
 }
 \arguments{
 \item{c_f}{Cost of (unloaded) flight (J/s)}
@@ -12,12 +12,14 @@ alpha(c_f, L_max, e_i)
 \item{L_max}{Maximum load size (\eqn{\muL})}
 
 \item{e_i}{Energetic value of load (\eqn{J/\muL})}
+
+\item{alphaVal}{Proportion cost increase (default: 5e-05 from Schmid-Hempel et al 1985)}
 }
 \value{
 \eqn{\alpha} value: units \eqn{J/\muL}
 }
 \description{
-Returns \eqn{\alpha}, which is the proportion increase in completely loaded cost of flight (5e-05 value from Schmid-Hempel et al 1985)
+Returns \eqn{\alpha}, which is the proportion increase in completely loaded cost of flight
 }
 \examples{
 alpha(0.05,59.5,14.35)

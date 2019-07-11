@@ -5,7 +5,8 @@
 \title{Extract currency (or currencies) from a cell.}
 \usage{
 curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
-  whatCurr_i, mu, l, e, NumFls, sumAll = T, forageType = "random")
+  whatCurr_i, mu, l, e, NumFls, sumAll = T, forageType = "random",
+  alphaVal = 5e-05)
 }
 \arguments{
 \item{L_i}{Load size (\eqn{\muL})}
@@ -45,6 +46,8 @@ curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
 \item{sumAll}{Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.}
 
 \item{forageType}{Foraging style (see details below).}
+
+\item{alphaVal}{Alpha-value (5e-5 by default)}
 }
 \value{
 Summed currency, or vector of currencies

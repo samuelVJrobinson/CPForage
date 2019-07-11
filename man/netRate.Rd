@@ -4,7 +4,8 @@
 \alias{netRate}
 \title{Net rate}
 \usage{
-netRate(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S)
+netRate(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
+  alphaVal = 5e-05)
 }
 \arguments{
 \item{L}{Load size (\eqn{\muL})}
@@ -32,6 +33,8 @@ netRate(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S)
 \item{beta}{Reduction in flight speed with increase in load}
 
 \item{S}{Competition term (0-1)}
+
+\item{alphaVal}{Alpha-value (5e-5 by default)}
 }
 \value{
 Net rate (J/s). \eqn{Net rate = \frac{Gains - Foraging

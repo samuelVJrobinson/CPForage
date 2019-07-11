@@ -12,7 +12,8 @@ params=list(L=59.5,
             c_i=0.0042,
             c_f=0.05,
             H=100,
-            beta=0.102)
+            beta=0.102,
+            alphaVal=5e-05)
 
 test_that('Currency calculations work properly',{
   #Net rate

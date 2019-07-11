@@ -12,4 +12,4 @@ LazyData: true
 URL: https://github.com/samuelVJrobinson/CPForage
 BugReports: https://github.com/samuelVJrobinson/CPForage/issues
 Suggests: testthat, dplyr, doSNOW
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
