@@ -53,7 +53,7 @@
 #'
 #'temp1 <- with(params,
 #'     curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-#'              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,
+#'              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=FALSE,
 #'              forageType='omniscient'))
 #'
 #'temp1[['eff']] #Efficiency within cell
@@ -61,7 +61,7 @@
 
 
 curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,
-              NumFls,sumAll=T,forageType='random',alpha=5e-05){
+              NumFls,sumAll=TRUE,forageType='random',alpha=5e-05){
   #Calculate S (competition term)
   if(L_i<=0){ #If Load is less than zero, S=1 (impossible to give back to patch)
     S=1

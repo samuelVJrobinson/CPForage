@@ -5,8 +5,8 @@
 \title{Extract currency (or currencies) from a cell.}
 \usage{
 curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
-  whatCurr_i, mu, l, e, NumFls, sumAll = T, forageType = "random",
-  alphaVal = 5e-05)
+  whatCurr_i, mu, l, e, NumFls, sumAll = TRUE, forageType = "random",
+  alpha = 5e-05)
 }
 \arguments{
 \item{L_i}{Load size (\eqn{\muL})}
@@ -47,7 +47,7 @@ curr(L_i, L_max_i, n_i, h_i, p_i, f_i, d_i, v_i, beta_i, H_i, c_i, c_f,
 
 \item{forageType}{Foraging style (see details below).}
 
-\item{alphaVal}{Alpha-value (5e-5 by default)}
+\item{alpha}{Increase in flight cost with increase in load (5e-5 by default)}
 }
 \value{
 Summed currency, or vector of currencies
@@ -85,7 +85,7 @@ params=list(L_i=59.5,
 
 temp1 <- with(params,
     curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-             c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,
+             c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=FALSE,
              forageType='omniscient'))
 
 temp1[['eff']] #Efficiency within cell

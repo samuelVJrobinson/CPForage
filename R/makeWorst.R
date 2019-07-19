@@ -10,7 +10,7 @@
 #'@return List of nests and world structure (scenario)
 #'
 #'@examples
-#'makeWorst(base,whichNest=1,parallel=T,cluster=cluster)
+#'makeWorst(base,whichNest=1)
 
 makeWorst=function(scenario,whichNest=NA,parallel=F,cluster=NA) {
   if(parallel&&is.na(cluster)) stop('Cluster not specified')

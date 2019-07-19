@@ -10,8 +10,8 @@
 #'@return List of nests and world structure (scenario)
 #'
 #'@examples
-#'makeBest(base,whichNest=1,parallel=T,cluster=cluster)
-makeBest=function(scenario,whichNest=NA,parallel=F,cluster=NA){
+#'makeBest(base,whichNest=1)
+makeBest=function(scenario,whichNest=NA,parallel=FALSE,cluster=NA){
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
   #Not used currently, but could be used to restrict which nest to add foragers to (currently added to all). Essentially represent "worst case scenario", where everyone moves to a given cell.
   if(is.na(whichNest)) stop('Nest # not specified')
@@ -20,7 +20,7 @@ makeBest=function(scenario,whichNest=NA,parallel=F,cluster=NA){
     transfer=with(scenario$nests[[i]],steps[stepNum]) #Number of foragers to add
     scenario$nests[[i]]$n=scenario$nests[[i]]$n+transfer #Adds TRANSFER foragers to every cell
   }
-  use=matrix(T,nrow=nrow(scenario$nests[[i]]$n),ncol=ncol(scenario$nests[[i]]$n)) #All cells
+  use=matrix(TRUE,nrow=nrow(scenario$nests[[i]]$n),ncol=ncol(scenario$nests[[i]]$n)) #All cells
   #Calculates S,L, and Curr values for every nest
   if(parallel){
     temp=parLapply(cluster,which(use),optimLoadCurr,scenario=scenario)

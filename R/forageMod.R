@@ -79,7 +79,7 @@
 #'            f=matrix(0,120,120),
 #'            cellSize=cellSize) #Empty world
 #'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
-#'canola-filled cells
+#'  #canola-filled cells
 #'world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 #'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 #'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
@@ -90,23 +90,24 @@
 #'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
 #'                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
 #'                       beta=0.102, #Proportion reduction in completely loaded
-#'                       flight speed (1-v/v_l)
+#'                       # flight speed (1-v/v_l)
 #'                       p_i=1, # Max loading rate (uL/s)
 #'                       h=1.5, #Handling time per flower (s)
 #'                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
-#'                       and Edelstein Keshet 1998)
+#'                       # and Edelstein Keshet 1998)
 #'                       c_i=0.0042, #Cost of non-flying activity
 #'                       H=100, #Time spent in the hive (s) (Seeley 1986 found
-#'                       100s and 70s for high and low intake rates)
+#'                       #100 s and 70 s for high and low intake rates)
 #'                       alpha=5e-05)
 #'
 #'#Nest structure (social rate maximizers)
-#'nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))
+#'nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,eps=0,
+#'    constants=honeybeeConstants))
 #'
 #'#Run model
-#'testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=T)
+#'testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
 
-forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
+forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
   #Internal functions
   if(verbose) print('Starting setup...')
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
@@ -195,8 +196,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
       #Calculate max number of foragers to move during a single time step (avoiding "reflection" problem, where large number of foragers are assigned to far end of world simply because of depletion effect)
       fakeNests=nests #Copy of nests
       fakeNests[[i]]$n=0 #No foragers
-      fakeNests[[i]]$h=min(fakeNests[[i]]$h,na.rm=T) #minimum handling time
-      fakeNests[[i]]$d=min(fakeNests[[i]]$d[fakeNests[[i]]$d!=0],na.rm=T) #minimum nonzero distance
+      fakeNests[[i]]$h=min(fakeNests[[i]]$h,na.rm=TRUE) #minimum handling time
+      fakeNests[[i]]$d=min(fakeNests[[i]]$d[fakeNests[[i]]$d!=0],na.rm=TRUE) #minimum nonzero distance
       fakeNests[[i]]$L=fakeNests[[i]]$L_max #L_max
       fakeNests[[i]]$curr=0
       fakeWorld=world #Copy of world
@@ -381,7 +382,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
         tempBest=makeBest(nestSet$base,whichNest=i,parallel=parallel,cluster=cluster)
         if(!nestSet$base$nests[[i]]$sol) tempWorst=makeWorst(nestSet$base,whichNest=i,parallel=parallel,cluster=cluster) else tempWorst=NA
         nestSet=list(best=tempBest,base=nestSet$base,worst=tempWorst) #Create new scenario set
-      } else {done[i]=T} #If transfer is 1, and there's no better deal, distribution has converged
+      } else {done[i]=TRUE} #If transfer is 1, and there's no better deal, distribution has converged
     } #End of FOR loop (nests)
     #If all nests are "done", loop should exit
     nitt=nitt+1 #Increment counter

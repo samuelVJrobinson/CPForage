@@ -1,4 +1,4 @@
-#Convert model runs to dataframes
+#Convert model runs to dataframes - this should probably not be dependent on dplyr & tidyr
 nests2df=function(modelRun){
   require(dplyr)
   require(tidyr)

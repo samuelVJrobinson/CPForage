@@ -7,7 +7,7 @@ nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
                        beta=0.102,p_i=1,
                        h=matrix(rep(1.5,3),1),
                        c_f=0.05,c_i=0.0042,
-                       H=100,alphaVal=5e-05,d=matrix(c(50,100,150),1),
+                       H=100,alpha=5e-05,d=matrix(c(50,100,150),1),
                        L=matrix(rep(59.5,3),1),
                        curr=matrix(c(5,10,15),1),
                        steps=5,stepNum=1))
@@ -34,13 +34,13 @@ scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Currency calculations work properly',{
   #Starting scenario set
-  expect_equal(scenSet$base$world$S,matrix(c(0.02329789,0.01104082,0.007221139),1),tol=1e-4) #S
+  expect_equal(scenSet$base$world$S,matrix(c(0.141725,0.072017,0.04054446),1),tol=1e-4) #S
   expect_equal(scenSet$base$nests[[1]]$n,matrix(c(5,10,15),1)) #n
-  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(7.106176,6.731574,6.606116),1),tol=1e-4) #L
-  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(26.39603,12.96529,8.370729),1),tol=1e-4) #curr
+  expect_equal(scenSet$base$nests[[1]]$L,matrix(c(0.9656924,0.5844156,0.4589603),1),tol=1e-4) #L
+  expect_equal(scenSet$base$nests[[1]]$curr,matrix(c(9.123033,3.040763,1.288525),1),tol=1e-4) #curr
 
   expect_equal(scenSet$best$nests[[1]]$n,matrix(c(10,15,20),1),tol=1e-4) #n in Best scenario
-  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(14.58132,9.050332,6.423796),1),tol=1e-4) #curr in Best scenario
+  expect_equal(scenSet$best$nests[[1]]$curr,matrix(c(4.510581,1.766846,0.7354189),1),tol=1e-4) #curr in Best scenario
 
   #Solitary foraging case:
   moves=whichMoves(scenSet,1) #What moves should foragers make?
@@ -66,6 +66,10 @@ test_that('Currency calculations work properly',{
   expect_false(newScenSet$base$nests$nest1$curr[3]==scenSet$base$nests$nest1$curr[3]) #curr
 
   #Move to fixation.
-  moves=whichMoves(newScenSet,1) #What moves should foragers make?
-  expect_equal(list(move=F,from=NA,to=NA),moves) #No move. Has reached fixation
+  moves <- whichMoves(newScenSet,1) #What moves should foragers make?
+
+  expect_true(moves$move) #Move from 3 to 1
+  newScenSet <- moveForagers(newScenSet,1,moves)
+  moves <- whichMoves(newScenSet,1)
+  expect_false(moves$move) #No move. Has reached fixation
 })

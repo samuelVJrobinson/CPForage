@@ -5,7 +5,7 @@
 \title{Get currency (or currencies)}
 \usage{
 getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
-  alphaVal = 5e-05)
+  alpha = 5e-05)
 }
 \arguments{
 \item{whatCurr}{Currency to use. Must be either \code{"rat"} (net rate) or \code{"eff"} (efficiency)}
@@ -16,6 +16,14 @@ getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
 
 \item{e}{Energetic value of nectar (J/\eqn{\muL})}
 
+\item{d}{Distance from hive (m)}
+
+\item{v}{Unloaded flight speed from hive (m/s)}
+
+\item{h}{Handling time per flower (s)}
+
+\item{f}{Flight time between flowers (s)}
+
 \item{l}{Maximum standing crop per flower (\eqn{\muL})}
 
 \item{p_i}{Licking speed for nectar (\eqn{\muL/s})}
@@ -24,21 +32,13 @@ getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
 
 \item{c_f}{Cost of flight (J/s)}
 
+\item{H}{Time spent inside hive (s)}
+
 \item{beta}{Decrease in flight speed with load (m/s\eqn{\muL})}
 
 \item{S}{Competition term (0-1)}
 
-\item{alphaVal}{Alpha-value (5e-5 by default)}
-
-\item{d_i}{Distance from hive (m)}
-
-\item{v_i}{Unloaded flight speed from hive (m/s)}
-
-\item{h_i}{Handling time per flower (s)}
-
-\item{f_i}{Flight time between flowers (s)}
-
-\item{H_i}{Time spent inside hive (s)}
+\item{alpha}{Increase in flight cost with increase in load (5e-5 by default)}
 }
 \value{
 Currency, or vector of currencies

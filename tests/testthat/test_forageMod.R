@@ -32,7 +32,7 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       c_f=0.05, #Unloaded flight energetic cost (J/s)
                       c_i=0.0042, #Cost of non-flying activity
                       H=100, #Time spent in the hive (s)
-                      alphaVal=5e-05) #Alpha value
+                      alpha=5e-05) #Alpha value
 
 #Nest structure (social rate maximizers)
 nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
@@ -55,15 +55,15 @@ test_that("Results in correct format",{
 })
 
 test_that("Results are consistent",{
-  #World 1
+  #World 1 - rate maximizers
   expect_equal(testOutput1$world$S[5,5],0.3398925,tol=1e-4) #S-value
   expect_equal(testOutput1$nests[[1]]$n[5,5],10) #n
   expect_equal(testOutput1$nests[[1]]$L[5,5],59.49994,tol=1e-4) #L
 
-  #World 2
-  expect_equal(testOutput2$world$S[4,4],0.2928803,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests[[1]]$n[4,4],16) #n
-  expect_equal(testOutput2$nests[[1]]$L[4,4],13.22455,tol=1e-4) #L
+  #World 2 - efficiency maximizers
+  expect_equal(testOutput2$world$S[4,4],0.5310006,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests[[1]]$n[4,4],13) #n
+  expect_equal(testOutput2$nests[[1]]$L[4,4],4.982501,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{
@@ -78,6 +78,7 @@ test_that('forageMod error handling works',{
   world2$mu <- NULL #Get rid of world argument
   expect_error(forageMod(world2,nests1,2000,verbose=F,parallel=F))
 })
+
 # #Plot results from test1
 # library(raster)
 # n <- raster(testOutput1$nests[[1]]$n)

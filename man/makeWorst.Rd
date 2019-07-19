@@ -22,5 +22,5 @@ List of nests and world structure (scenario)
 Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST. Called within \code{forageMod}
 }
 \examples{
-makeWorst(base,whichNest=1,parallel=T,cluster=cluster)
+makeWorst(base,whichNest=1)
 }

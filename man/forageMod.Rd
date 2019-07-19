@@ -4,8 +4,9 @@
 \alias{forageMod}
 \title{Run CPF model}
 \usage{
-forageMod(world, nests, iterlim = 5000, verbose = F, parallel = F,
-  ncore = 4, parMethod = "SOCK", tol = .Machine$double.eps^0.25)
+forageMod(world, nests, iterlim = 5000, verbose = FALSE,
+  parallel = FALSE, ncore = 4, parMethod = "SOCK",
+  tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{world}{World structure. List.}
@@ -72,7 +73,7 @@ this only works for individual aggregations of CP foragers.
 \item \code{c_f}: energetic cost of flight (J/s); numeric.
 \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 \item \code{H}: time spent in hive/aggregation (s); numeric.
-\item \code{alphaVal}: Alpha-value (5e-5 by default); numeric.
+\item \code{alpha}: Increase in flight cost with increase in load (5e-5 by default); numeric.
 }
 \item \code{eps}: accuracy to use for optimization; numeric.
 }
@@ -95,7 +96,7 @@ world1<-list(mu=matrix(0,120,120),
            f=matrix(0,120,120),
            cellSize=cellSize) #Empty world
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
-canola-filled cells
+ #canola-filled cells
 world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
@@ -106,19 +107,20 @@ world1$forageType <- 'omniscient' #Foraging style for flowers within patch
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
                       beta=0.102, #Proportion reduction in completely loaded
-                      flight speed (1-v/v_l)
+                      # flight speed (1-v/v_l)
                       p_i=1, # Max loading rate (uL/s)
                       h=1.5, #Handling time per flower (s)
                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
-                      and Edelstein Keshet 1998)
+                      # and Edelstein Keshet 1998)
                       c_i=0.0042, #Cost of non-flying activity
                       H=100, #Time spent in the hive (s) (Seeley 1986 found
-                      100s and 70s for high and low intake rates)
-                      alphaVal=5e-05)
+                      #100 s and 70 s for high and low intake rates)
+                      alpha=5e-05)
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))
+nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,eps=0,
+   constants=honeybeeConstants))
 
 #Run model
-testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=T)
+testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
 }
