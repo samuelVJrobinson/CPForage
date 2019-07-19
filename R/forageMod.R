@@ -54,7 +54,7 @@
 #' \item \code{c_f}: energetic cost of flight (J/s); numeric.
 #' \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 #' \item \code{H}: time spent in hive/aggregation (s); numeric.
-#' \item \code{alphaVal}: Alpha-value (5e-5 by default); numeric.
+#' \item \code{alpha}: Increase in flight cost with increase in load (5e-5 by default); numeric.
 #' }
 #' \item \code{eps}: accuracy to use for optimization; numeric.
 #' }
@@ -98,7 +98,7 @@
 #'                       c_i=0.0042, #Cost of non-flying activity
 #'                       H=100, #Time spent in the hive (s) (Seeley 1986 found
 #'                       100s and 70s for high and low intake rates)
-#'                       alphaVal=5e-05)
+#'                       alpha=5e-05)
 #'
 #'#Nest structure (social rate maximizers)
 #'nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))

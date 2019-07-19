@@ -56,7 +56,7 @@ optimLoadCurr=function(u,scenario){
                whatCurr_i=nests[[1]]$whatCurr,
                mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=world$flDens[u],
                forageType=world$forageType,
-               alphaVal=nests[[1]]$alphaVal)
+               alpha=nests[[1]]$alpha)
 
 
   #Nest-level arguments (one for each nest involved)
