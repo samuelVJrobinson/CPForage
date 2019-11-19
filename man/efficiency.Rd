@@ -4,8 +4,7 @@
 \alias{efficiency}
 \title{Efficiency}
 \usage{
-efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, S,
-  alphaVal = 5e-05)
+efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, S, alphaVal = 5e-05)
 }
 \arguments{
 \item{L}{Load size (\eqn{\muL})}

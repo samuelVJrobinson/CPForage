@@ -4,8 +4,24 @@
 \alias{getCurr}
 \title{Get currency (or currencies)}
 \usage{
-getCurr(whatCurr, L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, beta, S,
-  alphaVal = 5e-05)
+getCurr(
+  whatCurr,
+  L,
+  L_max,
+  e,
+  d,
+  v,
+  h,
+  f,
+  l,
+  p_i,
+  c_i,
+  c_f,
+  H,
+  beta,
+  S,
+  alphaVal = 5e-05
+)
 }
 \arguments{
 \item{whatCurr}{Currency to use. Must be either \code{"rat"} (net rate) or \code{"eff"} (efficiency)}
