@@ -96,8 +96,7 @@
 #'                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
 #'                       and Edelstein Keshet 1998)
 #'                       c_i=0.0042, #Cost of non-flying activity
-#'                       H=100, #Time spent in the hive (s) (Seeley 1986 found
-#'                       100s and 70s for high and low intake rates)
+#'                       H=100, #Time spent in the hive (s)
 #'                       alphaVal=5e-05)
 #'
 #'#Nest structure (social rate maximizers)

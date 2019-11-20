@@ -2,7 +2,7 @@ context('Summed currency selection (curr)')
 
 params=list(L_i=59.5,
             L_max_i=59.5,
-            n_i=10,
+            n_i=10, #10 foragers
             h_i=1.5,
             p_i=1,
             f_i=0.86,
@@ -10,34 +10,40 @@ params=list(L_i=59.5,
             v_i=7.8,
             beta_i=0.102,
             H_i=100,
-            # alphaVal=5e-05,
             c_f=0.05,
             c_i=0.0042,
             mu=0.3/3600,
             l=1,
             e=14.35,
-            NumFls=520*(10^2))
+            NumFls=520*(10^2),
+            alphaVal=5e-05)
 
 test_that('Summed currency works properly',{
   #Efficiency, using omniscient foraging
-  expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='omniscient')),215.2664,tol=1e-4)
+  expect_equal(with(params,curr(L_i,L_max_i,n_i=1,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
+                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,
+                                alphaVal=alphaVal,forageType='omniscient')),-0.9999808,tol=1e-4)
   #Efficiency, using random foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='random')),180.1282,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,alphaVal=alphaVal,
+                                whatCurr_i='eff',sumAll=T,forageType='random')),-0.9999808,tol=1e-4)
   #Efficiency, using NN foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-                                c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,forageType='nn')),180.1282,tol=1e-4)
+                                c_i,c_f,mu,l,e,NumFls,alphaVal=alphaVal,
+                                whatCurr_i='eff',sumAll=T,forageType='nn')),-0.9999808,tol=1e-4)
 
   #Net rate, using omniscient foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-            c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='omniscient')),2.592287,tol=1e-4)
+            c_i,c_f,mu,l,e,NumFls,alphaVal=alphaVal,
+            whatCurr_i='rat',sumAll=T,forageType='omniscient')),2.592287,tol=1e-4)
   #Net rate, using random foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-            c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='random')),2.10899,tol=1e-4)
+            c_i,c_f,mu,l,e,NumFls,alphaVal=alphaVal,
+            whatCurr_i='rat',sumAll=T,forageType='random')),2.10899,tol=1e-4)
   #Net rate, using NN foraging
   expect_equal(with(params,curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
-            c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=T,forageType='nn')),2.10899,tol=1e-4)
+            c_i,c_f,mu,l,e,NumFls,alphaVal=alphaVal,
+            whatCurr_i='rat',sumAll=T,forageType='nn')),2.10899,tol=1e-4)
 })
 
 test_that('Individual currency and S-values work properly',{

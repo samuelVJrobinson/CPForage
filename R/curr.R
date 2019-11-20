@@ -9,6 +9,7 @@
 #'@param f_i Flight time between flowers (s)
 #'@param d_i Distance from hive (m)
 #'@param v_i Unloaded flight speed from hive (m/s)
+#'@param alphaVal Increase in metabolic rate with load -- 5e-5 in Schmid-Hempel et al. 1987 (1/s)
 #'@param beta_i Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param H_i Time spent inside hive (s)
 #'@param c_i Cost of non-flying behaviour (J/s)
@@ -20,7 +21,6 @@
 #'@param NumFls Number of flowers per patch
 #'@param sumAll Should currencies for the cell be summed? (useful for optimization of L) If not, returns a vector of currencies.
 #'@param forageType Foraging style (see details below).
-#'@param alphaVal Alpha-value (5e-5 by default)
 #'
 #'@details \code{forageType} can be one of the following:
 #' \itemize{
@@ -42,6 +42,7 @@
 #'            f_i=0.86,
 #'            d_i=100,
 #'            v_i=7.8,
+#'            alphaVal=5e-5,
 #'            beta_i=0.102,
 #'            H_i=100,
 #'            c_f=0.05,
@@ -54,14 +55,14 @@
 #'temp1 <- with(params,
 #'     curr(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
 #'              c_i,c_f,mu,l,e,NumFls,whatCurr_i='eff',sumAll=T,
-#'              forageType='omniscient'))
+#'              alphaVal,forageType='omniscient'))
 #'
 #'temp1[['eff']] #Efficiency within cell
 #'temp1[['S']] #Reduction in per-flower value
 
 
 curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,mu,l,e,
-              NumFls,sumAll=T,forageType='random',alphaVal=5e-05){
+              NumFls,alphaVal,sumAll=T,forageType='random'){
   #Calculate S (competition term)
   if(L_i<=0){ #If Load is less than zero, S=1 (impossible to give back to patch)
     S=1

@@ -15,10 +15,11 @@
 #'@param c_i Cost of non-flying behaviour (J/s)
 #'@param c_f Cost of flight (J/s)
 #'@param H_i Time spent inside hive (s)
+#'@param alphaVal Increase in metabolic rate with load -- 5e-5 in Schmid-Hempel et al. 1987 (1/s)
 #'@param beta Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param S Competition term (0-1)
-#'@param alphaVal Alpha-value (5e-5 by default)
-
+#'
+#'
 #'@return Currency, or vector of currencies
 #'
 #'@examples
@@ -35,13 +36,14 @@
 #'c_i=0.0042,
 #'c_f=0.05,
 #'H=100,
+#'alphaVal=5e-5,
 #'beta=0.102)
 #'
 #'with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
 #'            l,p_i,c_i,c_f,H,beta,S=1))
 #'with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
 #'            l,p_i,c_i,c_f,H,beta,S=0.5))
-getCurr=function(whatCurr,L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S,alphaVal=5e-05){
+getCurr=function(whatCurr,L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal=5e-05,beta,S){
   if(is.na(whatCurr)|is.null(whatCurr)) stop('Currency not defined')
   switch(whatCurr,
          rat=netRate(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,beta,S,alphaVal),
