@@ -362,6 +362,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   nitt=1 #Number of iterations (debugging to see when it should be "cut off")
   startTime <- Sys.time() #Starting time
   if(verbose) print(paste('Simulation started at',startTime))
+
   #Main loop
   while(sum(!done)>0){
     if(verbose && (nitt %% 10)==0) print(paste('Iteration',nitt)) #Prints every 10 iterations

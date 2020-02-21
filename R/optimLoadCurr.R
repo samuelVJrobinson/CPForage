@@ -67,11 +67,13 @@ optimLoadCurr=function(u,scenario){
 
   #Are any nest-level arguments NA or nonexistant?
   if(any(sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x))))){
-    stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are NA or length==0. Are all dimensions equal?')
+    stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),
+         ' are NA or length==0. Are all dimensions equal?')
   }
   #Are any patch-level arguments nonexistent?
   if(any(sapply(patchArgs,function(x) any(lengths(x)==0)))) {
-    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),' are missing (length==0). Are all dimensions equal?')
+    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),
+         ' are missing (length==0). Are all dimensions equal?')
   }
 
   #If anything in the patch-level argument list is NA or <=0, returns NA values - indicates worthless patch
