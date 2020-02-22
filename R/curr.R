@@ -108,7 +108,8 @@ curr=function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr_i,
   # currs=mapply(getCurr,whatCurr=whatCurr_i, L=L_i,L_max=L_max_i, e=e, d=d_i, v=v_i, h=h_i,
   #              f=f_i, l=l, p_i=p_i, c_i=c_i, c_f=c_f, H=H_i, beta=beta_i,S)
   #Single-nest version
-  currs=getCurr(whatCurr_i,L_i,L_max_i,e,d_i,v_i,h_i,f_i,l,p_i,c_i,c_f,H_i,beta_i,S,alphaVal)
+  currs=getCurr(whatCurr_i,L_i,L_max_i,e,d_i,v_i,h_i,f_i,l,p_i,c_i,c_f,H_i,alphaVal,beta_i,S)
+     # function(whatCurr  ,L  ,L_max  ,e,d  ,v  ,h  ,f  ,l,p_i,c_i,c_f,H  ,alphaVal=5e-05,betaVal,S)
 
   #If sumAll is T, add all currencies together and return (useful for optimization of L).
   #Else, returns vector of currencies and S value for that cell (useful for generally returning currency)

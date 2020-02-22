@@ -14,7 +14,7 @@ test_that('Currency calculations work properly',{
   #Random foraging
 
   #Efficiency maximizers
-  test1<-optimLoadCurr(u,scenario)
+  test1 <- optimLoadCurr(u,scenario)
 
   expect_equal(test1$optimL,0.4887617,tol=1e-04)
   expect_equal(test1$optimCurr,-0.4201206,tol=1e-04)
