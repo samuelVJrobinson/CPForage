@@ -26,23 +26,42 @@
 #'  h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,S=0.5,alphaVal=5e-05)
 
 efficiency=function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
-  Gains=L*e #Gains within patch
-  OutboundLoss = c_f*d/v #Cost of traveling to patch from hive
-  InboundLoss = (c_f+L*e*alphaVal)*(d/(v*(1-(L_max*betaVal/L_max)))) #Cost of traveling to hive from patch
-  FlightLoss=OutboundLoss+InboundLoss #Total flight costs
 
-  ForageLossHandling=L*c_i*(S*l*p_i+h)/S*l
+  # #Params for testing
+  # detach(params)
+  # params <- list(L=50,L_max=50.5,e=14.35,d=100,v=7.8,h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,
+  #                c_f=0.05,H=100,S=0.5,alphaVal=5e-05,betaVal=0.102)
+  # attach(params)
+
+  #Convert J/uL to specific gravity
+  ug <- e/0.0168 #ug sucrose/uL nectar
+  SG_i <- (9.979606e-01 + 3.887171e-04*ug - 1.959075e-08*ug^2) #specific gravity - this appears to work
+
+  Gains <- L*e #Gains within patch
+  OutboundLoss <- c_f*d/v #Cost of traveling to patch from hive
+  InboundLoss <- (((L*SG_i)/100+1)*((L*betaVal)/L_max+1)*c_f*d)/v #Cost of traveling back to hive
+  FlightLoss <- OutboundLoss+InboundLoss #Total flight costs
+
+  ForageLossHandling <- (L*c_i*(S*l*p_i+h))/(S*l) #Energy required to extract necter
 
   if(L/S*l<1){
     ForageLossFlying = 0  #Only 1 flower visited, so no intra-patch movement needed
   } else {
-    ForageLossFlying=(S*c_f*f*(L/(S*l)+(L/(S*l)-1)^2-1)*l*alpha(c_f,L_max,e,alphaVal))/(2*L_max)
+    #Energetic losses while flying from flower-to-flower
+    ForageLossFlying <- c_f*f*((S^2*SG_i*betaVal*((L/S*l)-1)*l^2+2*S^2*SG_i*betaVal*
+                                  ((L/S*l)-1)^3*l^2+3*S^2*SG_i*betaVal*((L/S*l)-1)^2*l^2)/(600*L_max)+
+                                 (S*betaVal*((L/S*l)-1)*l+S*betaVal*((L/S*l)-1)^2*l)/(2*L_max)+
+                                 (S*SG_i*((L/S*l)-1)*l+S*SG_i*((L/S*l)-1)^2*l)/200+
+                                 (L/S*l)-1)
   }
 
-  ForagingLoss=ForageLossHandling+ForageLossFlying
-  HiveLoss=c_i*H #Loss within hive
-  return((Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightLoss+ForagingLoss+HiveLoss))
+  ForagingLoss <- ForageLossHandling+ForageLossFlying #Total losses during foraging
+  HiveLoss <- c_i*H #Loss within hive
+
+  Efficiency <- (Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightLoss+ForagingLoss+HiveLoss)
+
+  return(Efficiency)
 }
 
-params <- list(L=50,L_max=50.5,e=14.35,d=100,v=7.8,h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,S=0.5,alphaVal=5e-05,betaVal=0.102)
+
 
