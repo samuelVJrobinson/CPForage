@@ -28,12 +28,6 @@
 #'netRate(L=50,L_max=50.5,e=14.35,d=100,v=7.8,
 #'  h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,alphaVal=5e-05,betaVal=0.102,S=0.5)
 netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
-  # #Params for testing
-  # detach(params)
-  # params <- list(L=50,L_max=50.5,e=14.35,d=100,v=7.8,h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,
-  #                c_f=0.05,H=100,S=0.5,alphaVal=5e-05,betaVal=0.102)
-  # attach(params)
-
   #Rate=(Gains-ForagingLoss-Travel Loss - Hive Loss)/(Travel Time + Foraging Time + Hive Time)
 
   #Rate maximizers "should" always take largest load, unless S is high (at that point netrate(small load)=netrate(large load))
@@ -67,8 +61,8 @@ netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
     ForageTimeFlying <- f*((S*betaVal*((L/S*l)-1)*l+S*betaVal*((L/S*l)-1)^2*l)/(2*L_max)+(L/S*l)-1)
   }
 
-  ForagingLoss <- ForageLossHandling+ForageLossFlying
-  ForagingTime <- ForageTimeHandling+ForageTimeFlying
+  ForagingLoss <- ForageLossHandling+ForageLossFlying #Total foraging loss
+  ForagingTime <- ForageTimeHandling+ForageTimeFlying #Total foraging time
   HiveLoss <- c_i*H
   HiveTime <- H
 
