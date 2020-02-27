@@ -1,44 +1,45 @@
 context('Movement selection function (whichMoves)')
 
 #Create scenario
-nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
+nests<-list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
                        whatCurr="eff",sol=T,
                        eps=0,L_max=59.5,v=7.8,
                        beta=0.102,p_i=1,
                        h=matrix(rep(1.5,3)),
                        c_f=0.05,c_i=0.0042,
-                       H=100,alphaVal=5e-05,d=matrix(c(50,100,150),1),
+                       H=100,d=matrix(c(50,100,150),1),
                        L=matrix(rep(59.5,3),1),
                        curr=matrix(c(5,10,15),1),
-                       steps=5,stepNum=1))
+                       steps=5,stepNum=1)
 world<-list(mu=matrix(rep(8.33e-05,3),1),
             flDens=matrix(rep(520,3),1),
             e=matrix(rep(14.3,3),1),
             l=matrix(rep(1,3),1),
             f=matrix(rep(0.86,3),1),
+            alphaVal=matrix(rep(0.013,3),1),
             cellSize=10,forageType='omniscient',
             S=matrix(rep(1,3),1))
 baseScen=list(nests=nests,world=world)
 use=c(1,2,3)
 temp=lapply(use,optimLoadCurr,scenario=baseScen)
 baseScen$world$S[use]=sapply(temp,function(x) x$S) #Assigns S-values
-baseScen$nests[[1]]$L[use]=sapply(temp,function(x) x$optimL) #Assigns L
-baseScen$nests[[1]]$curr[use]=sapply(temp,function(x) x$optimCurr) #Assigns currency
+baseScen$nests$L[use]=sapply(temp,function(x) x$optimL) #Assigns L
+baseScen$nests$curr[use]=sapply(temp,function(x) x$optimCurr) #Assigns currency
 
 #Create scenario set
-bestScen=makeBest(baseScen,1)
-worstScen=makeWorst(baseScen,1)
+bestScen=makeBest(baseScen)
+worstScen=makeWorst(baseScen)
 scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
 
 test_that('Move calculations work properly',{
   #Solitary omniscient foraging case:
-  moves=whichMoves(scenSet,1) #What moves should foragers make?
+  moves=whichMoves(scenSet) #What moves should foragers make?
   expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
 
   #Social omniscient foraging
-  scenSet$best$nests[[1]]$sol=F
-  scenSet$base$nests[[1]]$sol=F
-  scenSet$worst$nests[[1]]$sol=F
-  moves=whichMoves(scenSet,1)
-  expect_equal(list(move=T,from=matrix(c(F,F,T),1),to=matrix(c(T,F,F),1)),moves) #From cell 3 to 1
+  scenSet$best$nests$sol=F
+  scenSet$base$nests$sol=F
+  scenSet$worst$nests$sol=F
+  moves=whichMoves(scenSet)
+  expect_equal(list(move=F,from=NA,to=NA),moves) #From cell 3 to 1
 })

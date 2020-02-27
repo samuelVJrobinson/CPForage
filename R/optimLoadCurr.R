@@ -11,94 +11,86 @@
 #' @examples
 #'
 
-optimLoadCurr=function(u,scenario){
+optimLoadCurr <- function(u,scenario){
   #Goal: Optimize a vector of L values to produce greatest summed currency in cell u
-  nests=scenario$nests #Unpacks scenario
-  world=scenario$world
+  nests <- scenario$nests #Unpacks scenario
+  world <- scenario$world
 
   #Argument checking:
   #If nest-level arguments are NA or missing, throw an error
-  if(any(sapply(nests,function(x) any(lengths(x)==0|is.na(x))))){
+  if(any(lengths(nests)==0|is.na(nests))){
     stop('Nest-level arguments are NA or length==0')
   }
   #If any arguments are missing from nests
-  argNames=c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","beta","p_i",
+  argNames <- c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","beta","p_i",
              "h","c_f","c_i","H","d","L","curr")
-  if(any(sapply(nests,function(x) any(!argNames %in% names(x))))){
+  if(any(!argNames %in% names(nests))){
     stop('Nest-level arguments are missing for: ',paste(names(nests)[sapply(nests,function(x)
-      any(!argNames %in% names(x)))]))
+      any(!argNames %in% names(x)))],sep=','))
   }
   #If there are too many cells provided
   if(length(u)>1) {
     stop('Too many cells provided. Use lapply to pass cells. e.g. lapply(use,optimLoadCurr,scenario=scenario)')
   }
 
-  emptyNest=nests[[1]]$n[u]<1 #Is cell u empty?
+  emptyNest <- nests$n[u]<1 #Is cell u empty?
 
   #If cell u is empty, returns NA values for L, 0 for curr, and 1 for S
   if(emptyNest){
-    return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
-                'optimCurr'=setNames(rep(0,length(nests)),names(nests)),
-                'S'=1)) #No competition in completely empty cells
+    return(list('optimL'=NA,'optimCurr'=0,'S'=1)) #No competition in completely empty cells
   }
 
   #Arguments to feed to optim, which optim feeds to curr
-  arglist=list(L_max_i=nests[[1]]$L_max,n_i=nests[[1]]$n[u],
-               h_i=nests[[1]]$h[u],
-               p_i=nests[[1]]$p_i,
-               f_i=world$f[u],
-               d_i=nests[[1]]$d[u],
-               v_i=nests[[1]]$v,
-               beta_i=nests[[1]]$beta,
-               H_i=nests[[1]]$H,
-               c_i=nests[[1]]$c_i,
-               c_f=nests[[1]]$c_f,
-               whatCurr_i=nests[[1]]$whatCurr,
+  arglist=list(L_max_i=nests$L_max,n_i=nests$n[u],
+               h_i=nests$h[u],
+               p_i=nests$p_i,
+               d_i=nests$d[u],
+               v_i=nests$v,
+               beta_i=nests$beta,
+               H_i=nests$H,
+               c_i=nests$c_i,
+               c_f=nests$c_f,
+               whatCurr_i=nests$whatCurr,
                mu=world$mu[u],l=world$l[u],e=world$e[u],NumFls=world$flDens[u],
-               forageType=world$forageType,
-               alphaVal=nests[[1]]$alphaVal)
+               f_i=world$f[u],forageType=world$forageType,
+               alphaVal=world$alphaVal[u])
 
 
   #Nest-level arguments (one for each nest involved)
-  nestArgs=arglist[c("L_max_i","n_i","p_i","f_i","d_i","v_i",
+  nestArgs <- arglist[c("L_max_i","n_i","p_i","f_i","d_i","v_i",
                      "beta_i","H_i","c_i","c_f","whatCurr_i","forageType")]
   #Patch-level arguments (only one for the patch)
-  patchArgs=arglist[c('mu','e','NumFls','l','h_i')]
+  patchArgs <- arglist[c('mu','e','NumFls','l','h_i','alphaVal')]
 
   #Are any nest-level arguments NA or nonexistant?
-  if(any(sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x))))){
-    stop('Nest-level arguments ',paste(names(nestArgs)[sapply(nestArgs,function(x) any(lengths(x)==0|is.na(x)))]),
+  if(any(lengths(nestArgs)==0|is.na(nestArgs))){
+    stop('Nest-level arguments ',paste(names(nestArgs)[any(lengths(nestArgs)==0|is.na(nestArgs))]),
          ' are NA or length==0. Are all dimensions equal?')
   }
   #Are any patch-level arguments nonexistent?
-  if(any(sapply(patchArgs,function(x) any(lengths(x)==0)))) {
-    stop('Patch-level arguments ',paste(names(patchArgs)[sapply(patchArgs,function(x) any(lengths(x)==0|is.na(x)))]),
+  if(any(lengths(patchArgs)==0)) {
+    stop('Patch-level arguments ',paste(names(patchArgs)[any(lengths(patchArgs)==0|is.na(patchArgs))]),
          ' are missing (length==0). Are all dimensions equal?')
   }
 
   #If anything in the patch-level argument list is NA or <=0, returns NA values - indicates worthless patch
-  if(any(sapply(patchArgs,function(x) is.na(x)||x<=0))) {
+  if(any(is.na(patchArgs)||patchArgs<=0)) {
     #Nest-specific numbers are named after corresponding nest
-    return(list('optimL'=setNames(rep(NA,length(nests)),names(nests)),
-                #Currency for foraging in empty patches
-                'optimCurr'=setNames(sapply(nests,function(x) switch(x$whatCurr,eff=-1,rat=-Inf)),names(nests)),
-                'S'=NA))
+    return(list('optimL'=NA,'optimCurr'= switch(nests$whatCurr,eff=-1,rat=-Inf),'S'=NA))
   }
-  startL=0 #ALWAYS USES 0 AS STARTING VALUE FOR LOAD
-  #L value and maximized currency value
-  optimL=do.call(optimize,c(list(f=curr,interval=c(0,nests[[1]]$L_max),maximum=T),arglist))
 
-  # #Multi-nest version
-  # optimL=do.call(optim,c(list(par=startL,fn=curr,method='L-BFGS-B',lower=0,upper=nests[[1]]$L_max,
-  #                             control=list(fnscale=-1)),arglist))$par
+  startL <- 0 #Use zero as the starting value for load
+
+  #L value and maximized currency value
+  optimL <- do.call(optimize,c(list(f=curr,interval=c(0,nests$L_max),maximum=T),arglist))
 
   #Best currency given optimum load, and S-value for the cell
-  #NOTE: this works for both solitary and social, because it calculates (currency | n) - i.e. n is dealt with elsewhere
-  currencyS=do.call(curr,c(list(L=optimL$maximum,sumAll=F),arglist)) #Named vector of currency and S-values
-  optimCurr=currencyS[[1]]
-  S=currencyS[[2]]
+  #NOTE: this works for both solitary and social, because it calculates (currency | n); n is dealt with elsewhere
+  currencyS <- do.call(curr,c(list(L=optimL$maximum,sumAll=F),arglist)) #Named vector of currency and S-values
+  optimCurr <- currencyS[[1]]
+  S <- currencyS[[2]]
 
   # Return all results together in one list
-  resultList=list('optimL'=optimL$maximum,'optimCurr'=optimCurr,'S'=S)
+  resultList <- list('optimL'=optimL$maximum,'optimCurr'=optimCurr,'S'=S)
   return(resultList)
 }

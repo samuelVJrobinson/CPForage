@@ -9,7 +9,7 @@
 #'@param f_i Flight time between flowers (s)
 #'@param d_i Distance from hive (m)
 #'@param v_i Unloaded flight speed from hive (m/s)
-#'@param alphaVal Increase in metabolic rate with load -- 5e-5 in Schmid-Hempel et al. 1987 (1/s)
+#'@param alphaVal Increase in metabolic rate with load (J/(s*\eqn{\muL}))
 #'@param beta_i Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param H_i Time spent inside hive (s)
 #'@param c_i Cost of non-flying behaviour (J/s)
@@ -42,7 +42,7 @@
 #'            f_i=0.86,
 #'            d_i=100,
 #'            v_i=7.8,
-#'            alphaVal=5e-5,
+#'            alphaVal=0.013,
 #'            beta_i=0.102,
 #'            H_i=100,
 #'            c_f=0.05,
@@ -71,156 +71,177 @@ curr <- function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr
     S=switch(forageType,
              #Omniscient - all flowers used optimally
              omniscient={
-               X <- -((2*L_i*L_max_i*NumFls*h_i+(L_i^2*NumFls*beta_i+2*L_i*L_max_i*NumFls)*f_i)*
-                        mu*v_i)/
+               X <- -((2*L_i*L_max_i*NumFls*h_i+(L_i^2*NumFls*beta_i+2*L_i*L_max_i*NumFls)*f_i)*mu*v_i)/
                  ((2*L_i*L_max_i*NumFls*l*mu*p_i-2*L_i*L_max_i*l*n_i+
-                     ((-L_i*NumFls*beta_i-2*L_max_i*NumFls)*f_i+2*H_i*L_max_i*NumFls)*l*mu)*v_i+
-                    (2*L_i*NumFls*beta_i+4*L_max_i*NumFls)*d_i*l*mu)
+                 ((-L_i*NumFls*beta_i-2*L_max_i*NumFls)*f_i+2*H_i*L_max_i*NumFls)*l*mu)*v_i+
+                 (2*L_i*NumFls*beta_i+4*L_max_i*NumFls)*d_i*l*mu)
 
-               return(ifelse((X<0)|(X>1),1,X)) #Sets S to 1 if outside 0-1 range
+               ifelse((X<0)|(X>1),1,X) #Sets S to 1 if outside 0-1 range
                },
              #Random - Possingham 1988: 1/(D_lamda*l+1)=S
+             #Positive solution is meaningful
+             random = (sqrt((4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+(-8*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+
+                    ((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+
+                    8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+(8*mu^2*L_i^2*L_max_i^2*NumFls^2*
+                    h_i+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+
+                    4*L_i^2*L_max_i^2*l^2*n_i^2+(((4*mu*L_i^2*L_max_i*NumFls*beta_i+
+                    8*mu*L_i*L_max_i^2*NumFls)*f_i-8*mu*H_i*L_i*L_max_i^2*NumFls)*l^2+
+                    (8*mu*L_i^2*L_max_i^2*NumFls*h_i+(4*mu*L_i^3*L_max_i*NumFls*beta_i+
+                    8*mu*L_i^2*L_max_i^2*NumFls)*f_i)*l)*n_i+
+                    ((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+
+                    4*mu^2*L_max_i^2*NumFls^2)*f_i^2+
+                    (-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*
+                    f_i+4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+
+                    (((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+
+                    8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*h_i+
+                    (-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
+                    8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+
+                    (4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+
+                    4*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+
+                    8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i*h_i+(mu^2*L_i^4*NumFls^2*beta_i^2+
+                    4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+4*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+
+                    ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+
+                    (-8*mu*L_i^2*L_max_i*NumFls*beta_i-16*mu*L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+
+                    ((-4*mu^2*L_i^2*NumFls^2*beta_i^2-16*mu^2*L_i*L_max_i*NumFls^2*beta_i-
+                    16*mu^2*L_max_i^2*NumFls^2)*d_i*f_i+(8*mu^2*H_i*L_i*L_max_i*
+                    NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+
+                    ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*h_i+
+                    (4*mu^2*L_i^3*NumFls^2*beta_i^2+16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
+                    16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+
+                    (4*mu^2*L_i^2*NumFls^2*beta_i^2+16*mu^2*L_i*L_max_i*NumFls^2*beta_i+
+                    16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+
+                    (2*mu*L_i*L_max_i*NumFls*l*p_i-2*L_i*L_max_i*l*n_i+((-mu*L_i*NumFls*beta_i-
+                    2*mu*L_max_i*NumFls)*f_i+2*mu*H_i*L_max_i*NumFls)*l-
+                    2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-2*mu*L_i*L_max_i*NumFls)*
+                    f_i)*v_i+(2*mu*L_i*NumFls*beta_i+
+                    4*mu*L_max_i*NumFls)*d_i*l)/((4*mu*L_i*L_max_i*NumFls*l*p_i+
+                    ((-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
+                    (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l),
 
+             #Random foraging, with non-saturating nectar production - need to re-check this
+             random_nonsat={do.call(optimize,list(f=nonlinearS,interval=c(0,2),A=0.6100842,B=1.2001725,C=0,
+                            mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
+                            f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum},
 
-    #Positive solution is meaningful
-    random = (sqrt((4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+(-8*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+
-                    ((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+
-     (8*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+
-      4*L_i^2*L_max_i^2*l^2*n_i^2+(((4*mu*L_i^2*L_max_i*NumFls*beta_i+8*mu*L_i*L_max_i^2*NumFls)*f_i-8*mu*H_i*L_i*L_max_i^2*NumFls)*l^2+
-      (8*mu*L_i^2*L_max_i^2*NumFls*h_i+(4*mu*L_i^3*L_max_i*NumFls*beta_i+8*mu*L_i^2*L_max_i^2*NumFls)*f_i)*l)*n_i+
-      ((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+4*mu^2*L_max_i^2*NumFls^2)*f_i^2+
-        (-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*f_i+4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+
-    (((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*h_i+
-    (-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+
-    (4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+
-    4*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i*h_i+
-    (mu^2*L_i^4*NumFls^2*beta_i^2+4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+4*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+
-    ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+
-    (-8*mu*L_i^2*L_max_i*NumFls*beta_i-16*mu*L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+((-4*mu^2*L_i^2*NumFls^2*beta_i^2-
-    16*mu^2*L_i*L_max_i*NumFls^2*beta_i-16*mu^2*L_max_i^2*NumFls^2)*d_i*f_i+
-      (8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+
-    ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*h_i+
-    (4*mu^2*L_i^3*NumFls^2*beta_i^2+16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+
-    (4*mu^2*L_i^2*NumFls^2*beta_i^2+16*mu^2*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+
-    (2*mu*L_i*L_max_i*NumFls*l*p_i-2*L_i*L_max_i*l*n_i+((-mu*L_i*NumFls*beta_i-2*mu*L_max_i*NumFls)*f_i+2*mu*H_i*L_max_i*NumFls)*l-
-    2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-2*mu*L_i*L_max_i*NumFls)*f_i)*v_i+(2*mu*L_i*NumFls*beta_i+
-    4*mu*L_max_i*NumFls)*d_i*l)/((4*mu*L_i*L_max_i*NumFls*l*p_i+
-    ((-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
-    (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l),
+    #Nearest-neighbour foraging. Used same as random, as simulation results were very similar
+             nn={
+               Sval <- (sqrt((4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+(-8*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+
+                  ((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+
+                  8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+(8*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+
+                  (4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+
+                  4*L_i^2*L_max_i^2*l^2*n_i^2+(((4*mu*L_i^2*L_max_i*NumFls*beta_i+8*mu*L_i*L_max_i^2*NumFls)*
+                  f_i-8*mu*H_i*L_i*L_max_i^2*NumFls)*l^2+(8*mu*L_i^2*L_max_i^2*NumFls*h_i+
+                  (4*mu*L_i^3*L_max_i*NumFls*beta_i+8*mu*L_i^2*L_max_i^2*NumFls)*f_i)*l)*n_i+
+                  ((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+
+                  4*mu^2*L_max_i^2*NumFls^2)*f_i^2+
+                  (-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*f_i+
+                  4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+(((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
+                  8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*h_i+
+                  (-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
+                  8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+(4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i+
+                  8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+
+                  4*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+
+                  8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i*h_i+
+                  (mu^2*L_i^4*NumFls^2*beta_i^2+4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+
+                  4*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+
+                  ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+
+                  (-8*mu*L_i^2*L_max_i*NumFls*beta_i-16*mu*L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+
+                  ((-4*mu^2*L_i^2*NumFls^2*beta_i^2-16*mu^2*L_i*L_max_i*NumFls^2*beta_i-
+                  16*mu^2*L_max_i^2*NumFls^2)*d_i*f_i+(8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+
+                  16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
+                  16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*h_i+(4*mu^2*L_i^3*NumFls^2*beta_i^2+
+                  16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+
+                  (4*mu^2*L_i^2*NumFls^2*beta_i^2+16*mu^2*L_i*L_max_i*NumFls^2*beta_i+
+                  16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+(2*mu*L_i*L_max_i*NumFls*l*p_i-
+                  2*L_i*L_max_i*l*n_i+((-mu*L_i*NumFls*beta_i-2*mu*L_max_i*NumFls)*f_i+
+                  2*mu*H_i*L_max_i*NumFls)*l-2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-
+                  2*mu*L_i*L_max_i*NumFls)*f_i)*v_i+(2*mu*L_i*NumFls*beta_i+4*mu*L_max_i*NumFls)*
+                  d_i*l)/((4*mu*L_i*L_max_i*NumFls*l*p_i+((-2*mu*L_i*NumFls*beta_i-
+                  4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
+                  (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l)
 
-    #Random foraging, with non-saturating nectar production
-    random_nonsat={do.call(optimize,list(f=nonlinearS,interval=c(0,2),A=0.6100842,B=1.2001725,C=0,
-           mu=mu,l=l,NumFls=NumFls,L_i=L_i,L_max_i=L_max_i,n_i=n_i,h_i=h_i,p_i=p_i,
-           f_i=f_i,d_i=d_i,v_i=v_i,beta_i=beta_i,H_i=H_i))$minimum},
+               #Scaled Dlambda value
+               DlambdaS <- (L_i*n_i)/(mu*NumFls*Sval*((((L_i*beta_i)/L_max_i+1)*d_i)/v_i+d_i/v_i+
+                            (L_i*(Sval*l*p_i+h_i))/(Sval*l)+f_i*((Sval*beta_i*(L_i/(Sval*l)-1)*l+
+                            Sval*beta_i*(L_i/(Sval*l)-1)^2*l)/(2*L_max_i)+L_i/(Sval*l)-1)+H_i))
 
-    #Nearest-neighbour foraging. Used same as random, as simulation results were very similar.
-     nn={
-       Sval <- (sqrt((4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+(-8*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+
-              ((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+
-              8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+(8*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+
-              (4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+
-              4*L_i^2*L_max_i^2*l^2*n_i^2+(((4*mu*L_i^2*L_max_i*NumFls*beta_i+8*mu*L_i*L_max_i^2*NumFls)*
-              f_i-8*mu*H_i*L_i*L_max_i^2*NumFls)*l^2+(8*mu*L_i^2*L_max_i^2*NumFls*h_i+
-              (4*mu*L_i^3*L_max_i*NumFls*beta_i+8*mu*L_i^2*L_max_i^2*NumFls)*f_i)*l)*n_i+
-              ((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+4*mu^2*L_max_i^2*NumFls^2)*f_i^2+
-              (-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*f_i+
-              4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+(((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
-              8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*h_i+
-              (-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
-              8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+(4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i+
-              8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+
-              4*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+
-              8*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i*h_i+
-              (mu^2*L_i^4*NumFls^2*beta_i^2+4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+
-              4*mu^2*L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+
-              ((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+
-              (-8*mu*L_i^2*L_max_i*NumFls*beta_i-16*mu*L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+
-              ((-4*mu^2*L_i^2*NumFls^2*beta_i^2-16*mu^2*L_i*L_max_i*NumFls^2*beta_i-
-              16*mu^2*L_max_i^2*NumFls^2)*d_i*f_i+(8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+
-              16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
-              16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*h_i+(4*mu^2*L_i^3*NumFls^2*beta_i^2+
-              16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+
-              (4*mu^2*L_i^2*NumFls^2*beta_i^2+16*mu^2*L_i*L_max_i*NumFls^2*beta_i+
-              16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+(2*mu*L_i*L_max_i*NumFls*l*p_i-
-              2*L_i*L_max_i*l*n_i+((-mu*L_i*NumFls*beta_i-2*mu*L_max_i*NumFls)*f_i+
-              2*mu*H_i*L_max_i*NumFls)*l-2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-
-              2*mu*L_i*L_max_i*NumFls)*f_i)*v_i+(2*mu*L_i*NumFls*beta_i+4*mu*L_max_i*NumFls)*
-              d_i*l)/((4*mu*L_i*L_max_i*NumFls*l*p_i+((-2*mu*L_i*NumFls*beta_i-
-              4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
-              (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l)
+               #If there are less than 5 foragers operating in the patch and DlambdaS<0.5:
+               #Use different set of behaviour
 
-       #Scaled Dlambda value
-       DlambdaS <- (L_i*n_i)/(mu*NumFls*Sval*((((L_i*beta_i)/L_max_i+1)*d_i)/v_i+d_i/v_i+
-                          (L_i*(Sval*l*p_i+h_i))/(Sval*l)+f_i*((Sval*beta_i*(L_i/(Sval*l)-1)*l+
-                          Sval*beta_i*(L_i/(Sval*l)-1)^2*l)/(2*L_max_i)+L_i/(Sval*l)-1)+H_i))
-
-       #If there are less than 5 foragers operating in the patch and DlambdaS<0.5, uses different set of behaviour
-       if(n_i<5 & DlambdaS<0.5){
-         slope <- -0.76906
-         brPoint <- 0.07669
-         Sval <- (sqrt(((4*mu^2*L_i^2*L_max_i^2*NumFls^2*brPoint^2*l^2*p_i^2+((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-
-            8*mu^2*L_i*L_max_i^2*NumFls^2)*brPoint^2*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint^2)*
-            l^2*p_i+((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+4*mu^2*L_max_i^2*NumFls^2)*
-            brPoint^2*f_i^2+(-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*brPoint^2*f_i+
-            4*mu^2*H_i^2*L_max_i^2*NumFls^2*brPoint^2)*l^2)*slope^2+(-8*mu^2*L_i^2*L_max_i^2*NumFls^2*brPoint*l^2*
-            p_i^2+(16*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+16*mu^2*L_i*
-            L_max_i^2*NumFls^2)*brPoint*f_i-16*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint)*l^2+
-            ((-4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i-8*mu^2*L_i^2*L_max_i^2*NumFls^2)*brPoint*f_i-
-            8*mu^2*L_i^2*L_max_i^2*NumFls^2*brPoint*h_i)*l)*p_i+((-8*mu*L_i^2*L_max_i*NumFls*beta_i-
-            16*mu*L_i*L_max_i^2*NumFls)*f_i+16*mu*H_i*L_i*L_max_i^2*NumFls)*l^2*n_i+((-2*mu^2*L_i^2*
-            NumFls^2*beta_i^2-8*mu^2*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*L_max_i^2*NumFls^2)*brPoint*f_i^2+
-            (8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*brPoint*f_i-8*mu^2*
-            H_i^2*L_max_i^2*NumFls^2*brPoint)*l^2+(((4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*L_i*
-            L_max_i^2*NumFls^2)*brPoint*f_i-8*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint)*h_i+
-            (2*mu^2*L_i^3*NumFls^2*beta_i^2+8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*L_i*L_max_i^2*
-            NumFls^2)*brPoint*f_i^2+(-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*
-            brPoint*f_i)*l)*slope+4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+(((-4*mu^2*L_i^2*L_max_i*NumFls^2*
-            beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+
-            (8*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*
-            L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*
-            NumFls^2*beta_i+4*mu^2*L_max_i^2*NumFls^2)*f_i^2+(-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-
-            8*mu^2*H_i*L_max_i^2*NumFls^2)*f_i+4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+(((-4*mu^2*
-            L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*
-            H_i*L_i*L_max_i^2*NumFls^2)*h_i+(-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*
-            L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+(4*mu^2*H_i*L_i^2*
-            L_max_i*NumFls^2*beta_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+4*mu^2*L_i^2*L_max_i^2*
-            NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*
-            f_i*h_i+(mu^2*L_i^4*NumFls^2*beta_i^2+4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+4*mu^2*
-            L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+(((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
-            16*mu^2*L_i*L_max_i^2*NumFls^2)*brPoint^2*d_i*l^2*p_i+((-4*mu^2*L_i^2*NumFls^2*beta_i^2-
-            16*mu^2*L_i*L_max_i*NumFls^2*beta_i-16*mu^2*L_max_i^2*NumFls^2)*brPoint^2*d_i*f_i+
-            (8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*
-            brPoint^2*d_i)*l^2)*slope^2+((-16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-32*mu^2*L_i*
-            L_max_i^2*NumFls^2)*brPoint*d_i*l^2*p_i+(16*mu*L_i^2*L_max_i*NumFls*beta_i+32*mu*
-            L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+((8*mu^2*L_i^2*NumFls^2*beta_i^2+32*mu^2*
-            L_i*L_max_i*NumFls^2*beta_i+32*mu^2*L_max_i^2*NumFls^2)*brPoint*d_i*f_i+
-            (-16*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-32*mu^2*H_i*L_max_i^2*NumFls^2)*
-            brPoint*d_i)*l^2+((-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-16*mu^2*L_i*L_max_i^2*NumFls^2)*
-            brPoint*d_i*h_i+(-4*mu^2*L_i^3*NumFls^2*beta_i^2-16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-16*
-            mu^2*L_i*L_max_i^2*NumFls^2)*brPoint*d_i*f_i)*l)*slope+(8*mu^2*L_i^2*L_max_i*NumFls^2*
-            beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+((-4*mu^2*
-            L_i^2*NumFls^2*beta_i^2-16*mu^2*L_i*L_max_i*NumFls^2*beta_i-16*mu^2*
-            L_max_i^2*NumFls^2)*d_i*f_i+(8*mu^2*H_i*L_i*L_max_i*
-            NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+((8*mu^2*L_i^2*L_max_i*
-            NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*
-            d_i*h_i+(4*mu^2*L_i^3*NumFls^2*beta_i^2+16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
-            16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+(4*mu^2*L_i^2*NumFls^2*beta_i^2+
-            16*mu^2*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*L_max_i^2*NumFls^2)*brPoint^2*d_i^2*l^2*slope^2+
-            (-8*mu^2*L_i^2*NumFls^2*beta_i^2-32*mu^2*L_i*L_max_i*NumFls^2*beta_i-32*mu^2*
-            L_max_i^2*NumFls^2)*brPoint*d_i^2*l^2*slope+(4*mu^2*L_i^2*NumFls^2*beta_i^2+
-            16*mu^2*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+
-            ((((mu*L_i*NumFls*beta_i+2*mu*L_max_i*NumFls)*brPoint*f_i-2*mu*H_i*L_max_i*
-            NumFls*brPoint)*l-2*mu*L_i*L_max_i*NumFls*brPoint*l*p_i)*slope+2*mu*L_i*L_max_i*
-            NumFls*l*p_i+((-mu*L_i*NumFls*beta_i-2*mu*L_max_i*NumFls)*f_i+2*mu*H_i*L_max_i*NumFls)*l-
-            2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-2*mu*L_i*L_max_i*NumFls)*f_i)*
-            v_i+(-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*brPoint*d_i*l*slope+
-            (2*mu*L_i*NumFls*beta_i+4*mu*L_max_i*NumFls)*d_i*l)/((4*mu*L_i*L_max_i*NumFls*
-            l*p_i+((-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
-            (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l)
-         Sval <- ifelse(Sval>1,1,Sval)
-         }
-       Sval
-       },
+               if(n_i<5 & DlambdaS<0.5){
+                 slope <- -0.76906
+                 brPoint <- 0.07669
+                 Sval <- (sqrt(((4*mu^2*L_i^2*L_max_i^2*NumFls^2*brPoint^2*l^2*p_i^2+
+                          ((-4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*
+                          brPoint^2*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint^2)*
+                          l^2*p_i+((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*NumFls^2*beta_i+
+                          4*mu^2*L_max_i^2*NumFls^2)*brPoint^2*f_i^2+(-4*mu^2*H_i*L_i*L_max_i*NumFls^2*
+                          beta_i-8*mu^2*H_i*L_max_i^2*NumFls^2)*brPoint^2*f_i+
+                          4*mu^2*H_i^2*L_max_i^2*NumFls^2*brPoint^2)*l^2)*slope^2+(-8*mu^2*L_i^2*
+                          L_max_i^2*NumFls^2*brPoint*l^2*
+                          p_i^2+(16*mu*L_i^2*L_max_i^2*NumFls*l^2*n_i+((8*mu^2*L_i^2*L_max_i*
+                          NumFls^2*beta_i+16*mu^2*L_i*
+                          L_max_i^2*NumFls^2)*brPoint*f_i-16*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint)*l^2+
+                          ((-4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i-8*mu^2*L_i^2*L_max_i^2*NumFls^2)*brPoint*f_i-
+                          8*mu^2*L_i^2*L_max_i^2*NumFls^2*brPoint*h_i)*l)*p_i+((-8*mu*L_i^2*L_max_i*NumFls*beta_i-
+                          16*mu*L_i*L_max_i^2*NumFls)*f_i+16*mu*H_i*L_i*L_max_i^2*NumFls)*l^2*n_i+((-2*mu^2*L_i^2*
+                          NumFls^2*beta_i^2-8*mu^2*L_i*L_max_i*NumFls^2*beta_i-8*mu^2*L_max_i^2*NumFls^2)*
+                          brPoint*f_i^2+
+                          (8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*brPoint*f_i-8*mu^2*
+                          H_i^2*L_max_i^2*NumFls^2*brPoint)*l^2+(((4*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*L_i*
+                          L_max_i^2*NumFls^2)*brPoint*f_i-8*mu^2*H_i*L_i*L_max_i^2*NumFls^2*brPoint)*h_i+
+                          (2*mu^2*L_i^3*NumFls^2*beta_i^2+8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+8*mu^2*L_i*L_max_i^2*
+                          NumFls^2)*brPoint*f_i^2+(-4*mu^2*H_i*L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*
+                          H_i*L_i*L_max_i^2*NumFls^2)*
+                          brPoint*f_i)*l)*slope+4*mu^2*L_i^2*L_max_i^2*NumFls^2*l^2*p_i^2+
+                          (((-4*mu^2*L_i^2*L_max_i*NumFls^2*
+                          beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*l^2+
+                          (8*mu^2*L_i^2*L_max_i^2*NumFls^2*h_i+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*
+                          L_i^2*L_max_i^2*NumFls^2)*f_i)*l)*p_i+((mu^2*L_i^2*NumFls^2*beta_i^2+4*mu^2*L_i*L_max_i*
+                          NumFls^2*beta_i+4*mu^2*L_max_i^2*NumFls^2)*f_i^2+(-4*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-
+                          8*mu^2*H_i*L_max_i^2*NumFls^2)*f_i+4*mu^2*H_i^2*L_max_i^2*NumFls^2)*l^2+(((-4*mu^2*
+                          L_i^2*L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i+8*mu^2*
+                          H_i*L_i*L_max_i^2*NumFls^2)*h_i+(-2*mu^2*L_i^3*NumFls^2*beta_i^2-8*mu^2*L_i^2*
+                          L_max_i*NumFls^2*beta_i-8*mu^2*L_i*L_max_i^2*NumFls^2)*f_i^2+(4*mu^2*H_i*L_i^2*
+                          L_max_i*NumFls^2*beta_i+8*mu^2*H_i*L_i*L_max_i^2*NumFls^2)*f_i)*l+4*mu^2*L_i^2*L_max_i^2*
+                          NumFls^2*h_i^2+(4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+8*mu^2*L_i^2*L_max_i^2*NumFls^2)*
+                          f_i*h_i+(mu^2*L_i^4*NumFls^2*beta_i^2+4*mu^2*L_i^3*L_max_i*NumFls^2*beta_i+4*mu^2*
+                          L_i^2*L_max_i^2*NumFls^2)*f_i^2)*v_i^2+(((8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
+                          16*mu^2*L_i*L_max_i^2*NumFls^2)*brPoint^2*d_i*l^2*p_i+((-4*mu^2*L_i^2*NumFls^2*beta_i^2-
+                          16*mu^2*L_i*L_max_i*NumFls^2*beta_i-16*mu^2*L_max_i^2*NumFls^2)*brPoint^2*d_i*f_i+
+                          (8*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*
+                          brPoint^2*d_i)*l^2)*slope^2+((-16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-32*mu^2*L_i*
+                          L_max_i^2*NumFls^2)*brPoint*d_i*l^2*p_i+(16*mu*L_i^2*L_max_i*NumFls*beta_i+32*mu*
+                          L_i*L_max_i^2*NumFls)*d_i*l^2*n_i+((8*mu^2*L_i^2*NumFls^2*beta_i^2+32*mu^2*
+                          L_i*L_max_i*NumFls^2*beta_i+32*mu^2*L_max_i^2*NumFls^2)*brPoint*d_i*f_i+
+                          (-16*mu^2*H_i*L_i*L_max_i*NumFls^2*beta_i-32*mu^2*H_i*L_max_i^2*NumFls^2)*
+                          brPoint*d_i)*l^2+((-8*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-16*mu^2*L_i*L_max_i^2*NumFls^2)*
+                          brPoint*d_i*h_i+(-4*mu^2*L_i^3*NumFls^2*beta_i^2-16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i-16*
+                          mu^2*L_i*L_max_i^2*NumFls^2)*brPoint*d_i*f_i)*l)*slope+(8*mu^2*L_i^2*L_max_i*NumFls^2*
+                          beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*l^2*p_i+((-4*mu^2*
+                          L_i^2*NumFls^2*beta_i^2-16*mu^2*L_i*L_max_i*NumFls^2*beta_i-16*mu^2*
+                          L_max_i^2*NumFls^2)*d_i*f_i+(8*mu^2*H_i*L_i*L_max_i*
+                          NumFls^2*beta_i+16*mu^2*H_i*L_max_i^2*NumFls^2)*d_i)*l^2+((8*mu^2*L_i^2*L_max_i*
+                          NumFls^2*beta_i+16*mu^2*L_i*L_max_i^2*NumFls^2)*
+                          d_i*h_i+(4*mu^2*L_i^3*NumFls^2*beta_i^2+16*mu^2*L_i^2*L_max_i*NumFls^2*beta_i+
+                          16*mu^2*L_i*L_max_i^2*NumFls^2)*d_i*f_i)*l)*v_i+(4*mu^2*L_i^2*NumFls^2*beta_i^2+
+                          16*mu^2*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*L_max_i^2*NumFls^2)*
+                          brPoint^2*d_i^2*l^2*slope^2+
+                          (-8*mu^2*L_i^2*NumFls^2*beta_i^2-32*mu^2*L_i*L_max_i*NumFls^2*beta_i-32*mu^2*
+                          L_max_i^2*NumFls^2)*brPoint*d_i^2*l^2*slope+(4*mu^2*L_i^2*NumFls^2*beta_i^2+
+                          16*mu^2*L_i*L_max_i*NumFls^2*beta_i+16*mu^2*L_max_i^2*NumFls^2)*d_i^2*l^2)+
+                          ((((mu*L_i*NumFls*beta_i+2*mu*L_max_i*NumFls)*brPoint*f_i-2*mu*H_i*L_max_i*
+                          NumFls*brPoint)*l-2*mu*L_i*L_max_i*NumFls*brPoint*l*p_i)*slope+2*mu*L_i*L_max_i*
+                          NumFls*l*p_i+((-mu*L_i*NumFls*beta_i-2*mu*L_max_i*NumFls)*f_i+2*mu*H_i*L_max_i*NumFls)*l-
+                          2*mu*L_i*L_max_i*NumFls*h_i+(-mu*L_i^2*NumFls*beta_i-2*mu*L_i*L_max_i*NumFls)*f_i)*
+                          v_i+(-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*brPoint*d_i*l*slope+
+                          (2*mu*L_i*NumFls*beta_i+4*mu*L_max_i*NumFls)*d_i*l)/((4*mu*L_i*L_max_i*NumFls*
+                          l*p_i+((-2*mu*L_i*NumFls*beta_i-4*mu*L_max_i*NumFls)*f_i+4*mu*H_i*L_max_i*NumFls)*l)*v_i+
+                          (4*mu*L_i*NumFls*beta_i+8*mu*L_max_i*NumFls)*d_i*l)
+                 Sval <- ifelse(Sval>1,1,Sval)
+               }
+               Sval
+               },
     stop(paste0('Foraging type: "',forageType,'" not found.'))
     )
   }
@@ -228,13 +249,7 @@ curr <- function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr
   if(S>1) S=1
 
   #Calculate currency
-  # Multi-nest version
-  # #Vector of currencies for cell, using getCurr to return appropriate nest-specific currency
-  # currs=mapply(getCurr,whatCurr=whatCurr_i, L=L_i,L_max=L_max_i, e=e, d=d_i, v=v_i, h=h_i,
-  #              f=f_i, l=l, p_i=p_i, c_i=c_i, c_f=c_f, H=H_i, beta=beta_i,S)
-  #Single-nest version
   currs <- getCurr(whatCurr_i,L_i,L_max_i,e,d_i,v_i,h_i,f_i,l,p_i,c_i,c_f,H_i,alphaVal,beta_i,S)
-     # function(whatCurr  ,L  ,L_max  ,e,d  ,v  ,h  ,f  ,l,p_i,c_i,c_f,H  ,alphaVal=5e-05,betaVal,S)
 
   #If sumAll is T, add all currencies together and return (useful for optimization of L).
   #Else, returns vector of currencies and S value for that cell (useful for generally returning currency)

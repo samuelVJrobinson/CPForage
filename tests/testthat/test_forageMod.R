@@ -14,6 +14,7 @@ world1<-list(mu=matrix(1/3600,worldSize/cellSize,worldSize/cellSize),  #Weeds pr
            e=matrix(8,worldSize/cellSize,worldSize/cellSize), #worth about 75% of canola
            l=matrix(3,worldSize/cellSize,worldSize/cellSize), #max nectar = 3uL
            f=matrix(5,worldSize/cellSize,worldSize/cellSize), #5 second flight time b/w fls
+           alphaVal=matrix(0.013,worldSize/cellSize,worldSize/cellSize), #Alpha value (J/s*uL)
            cellSize=cellSize,
            forageType='random') #Competition for flowers within patch
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
@@ -31,14 +32,15 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       h=1.5, #Handling time per flower (s)
                       c_f=0.05, #Unloaded flight energetic cost (J/s)
                       c_i=0.0042, #Cost of non-flying activity
-                      H=100, #Time spent in the hive (s)
-                      alphaVal=5e-05) #Alpha value
+                      H=100) #Time spent in the hive (s)
+
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
-                        constants=honeybeeConstants,eps=0,steps=c(50,5,1)))
+nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
+                        constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 
-#Run full model (serial)
+debugonce(forageMod)
+#Run full model in serial
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (solitary efficiency maximizers)
