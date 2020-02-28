@@ -24,7 +24,7 @@
 #'@return List containing world structure (competition term) and nest structure
 #'  (forager distribution)
 #'
-#'@details \code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} and \code{RMPI} (if using MPI) packages.
+#'@details \code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} (Windows) and \code{RMPI} (Linux) packages.
 #'
 #'\code{world} should be a named list containing:
 #' \itemize{
@@ -226,19 +226,25 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   #Load parallel processing
   if(parallel){
     if(verbose) cat('Loading parallel processing libraries...')
-    require(doSNOW)
 
     #Set up ncore number of clusters for parallel processing
-    if(parMethod=='MPI'){
+    if(parMethod=='MPI'){ #Required for parallel processing on cluster computing
       require(Rmpi)
+      require(doSNOW)
       ncore <- mpi.universe.size() #Number of cores available to spawn processes
       sprintf("TEST mpi.universe.size() =  %i", ncore) #Number of MPI processes
       cluster <- makeCluster(ncore-1, type = "MPI") #Set up clusters for parallel processing (# cores - 1 = # slave cores)
-    } else {
+      registerDoSNOW(cluster) #Registers clusters
+    } else if(parMethod=='SOCK') { #Works on Windows machines
+      require(doSNOW)
       cluster <- makeCluster(ncore, type = "SOCK") #Create SOCK clusters
+      registerDoSNOW(cluster) #Registers clusters
+    } else if(parMethod='parallel'){
+      require(parallel)
+      cluster <- makeForkCluster(type='FORK',nnodes=ncore) #Forking cluster for Linux
+    } else {
+      warning('Parallel processing library not recognized. Using serial processing.')
     }
-
-    registerDoSNOW(cluster) #Registers clusters
 
     #Function for closing clusters upon unexpected stop
     .Last <- function(){

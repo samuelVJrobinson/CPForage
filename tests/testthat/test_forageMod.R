@@ -38,75 +38,56 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
 #Nest structure (social rate maximizers)
 nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
                         constants=honeybeeConstants,eps=0,steps=c(50,5,1))
-
-debugonce(forageMod)
-#Run full model in serial
+#Run model in serial
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (solitary efficiency maximizers)
-nests2<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
-                        eps=0,steps=c(50,5,1)))
+nests2<-list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
+                        eps=0,steps=c(50,5,1))
 
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 
-test_that("Results in correct format",{
+test_that("Results in expected format",{
   expect_length(testOutput1,2) #Nest and world list
-  expect_length(testOutput1$nests,1) #Single nest
-  expect_length(testOutput1$nests[[1]],23) #23 elements within nest structure
-  expect_equal(dim(testOutput1$nests[[1]]$n),c(12,12)) #12 x 12 matrix
+  expect_length(testOutput1$nests,22) #23 elements within nest structure
+  expect_equal(dim(testOutput1$nests$n),c(12,12)) #12 x 12 matrix
 })
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.3398925,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests[[1]]$n[5,5],10) #n
-  expect_equal(testOutput1$nests[[1]]$L[5,5],59.49994,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.3462112,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests$n[5,5],10) #n
+  expect_equal(testOutput1$nests$L[5,5],59.49994,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.2928803,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests[[1]]$n[4,4],16) #n
-  expect_equal(testOutput2$nests[[1]]$L[4,4],13.22455,tol=1e-4) #L
+  expect_equal(testOutput2$world$S[4,4],0.5281734,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests$n[4,4],13) #n
+  expect_equal(testOutput2$nests$L[4,4],4.909484,tol=1e-4) #L
+
+  #Plot of results
+  par(mfrow=c(3,1))
+  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$world$S[2:11,2:11]),xlab='Distance',ylab='S',pch=19,col='red',cex=1.3,main='Depletion',ylim=c(0,1))
+  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$world$S[2:11,2:11]),pch=19)
+  abline(h=c(0,1),lty='dashed')
+  legend('topright',c('Efficiency','Net Rate'),fill=c('red','black'))
+
+  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$n[2:11,2:11]),xlab='Distance',ylab='Count',pch=19,col='red',cex=1.3,main='Forager number')
+  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$n[2:11,2:11]),pch=19)
+
+  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$L[2:11,2:11]),xlab='Distance',ylab='L',pch=19,col='red',cex=1.3,main='Load size',
+       ylim=c(0,max(c(testOutput2$nests$L,testOutput1$nests$L),na.rm=T)))
+  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$L[2:11,2:11]),pch=19)
 })
 
 test_that('forageMod error handling works',{
   nests2 <- nests1
-  nests2[[1]]$xloc <- NULL #Get rid of xloc argument
+  nests2$xloc <- NULL #Get rid of xloc argument
   expect_error(forageMod(world1,nests2,2000,verbose=F,parallel=F))
-  nests2[[1]]$xloc <- 1
-  nests2[[1]]$whatCurr <- 'wrong' #Bad currency input
+  nests2$xloc <- 1
+  nests2$whatCurr <- 'wrong' #Bad currency input
   expect_error(forageMod(world1,nests2,2000,verbose=F,parallel=F))
 
   world2 <- world1
   world2$mu <- NULL #Get rid of world argument
   expect_error(forageMod(world2,nests1,2000,verbose=F,parallel=F))
 })
-# #Plot results from test1
-# library(raster)
-# n <- raster(testOutput1$nests[[1]]$n)
-# L <- raster(testOutput1$nests[[1]]$L)
-# curr <- raster(testOutput1$nests[[1]]$curr)
-# loadingTime <- raster(testOutput1$nests[[1]]$loadingTime)
-# mu <- raster(testOutput1$world$mu)
-# flDens <- raster(testOutput1$world$flDens)
-# e <- raster(testOutput1$world$e)
-# l <- raster(testOutput1$world$l)
-# f <- raster(testOutput1$world$f)
-# S <- raster(testOutput1$world$S)
-# resStack <- stack(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
-# names(resStack) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
-# plot(resStack)
-#
-# #Plot results from test2
-# n <- raster(testOutput2$nests[[1]]$n)
-# L <- raster(testOutput2$nests[[1]]$L)
-# curr <- raster(testOutput2$nests[[1]]$curr)
-# loadingTime <- raster(testOutput2$nests[[1]]$loadingTime)
-# mu <- raster(testOutput2$world$mu)
-# flDens <- raster(testOutput2$world$flDens)
-# e <- raster(testOutput2$world$e)
-# l <- raster(testOutput2$world$l)
-# f <- raster(testOutput2$world$f)
-# S <- raster(testOutput2$world$S)
-# resStack2 <- brick(n,L,curr,loadingTime,mu,flDens,e,l,f,S)
-# names(resStack2) <- c('n','L','curr','loadingTime','mu','flDens','e','l','f','S')
-# plot(resStack2)
