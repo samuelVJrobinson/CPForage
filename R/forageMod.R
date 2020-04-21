@@ -239,7 +239,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
       require(doSNOW)
       cluster <- makeCluster(ncore, type = "SOCK") #Create SOCK clusters
       registerDoSNOW(cluster) #Registers clusters
-    } else if(parMethod='parallel'){
+    } else if(parMethod=='parallel'){
       require(parallel)
       cluster <- makeForkCluster(type='FORK',nnodes=ncore) #Forking cluster for Linux
     } else {
