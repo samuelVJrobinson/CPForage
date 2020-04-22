@@ -36,13 +36,13 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
 
 
 #Nest structure (social rate maximizers)
-nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=T,
+nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,
                         constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 #Run model in serial
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
-#Nest structure (solitary efficiency maximizers)
-nests2<-list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=T,constants=honeybeeConstants,
+#Nest structure (social efficiency maximizers)
+nests2<-list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=F,constants=honeybeeConstants,
                         eps=0,steps=c(50,5,1))
 
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
@@ -60,9 +60,9 @@ test_that("Results are consistent",{
   expect_equal(testOutput1$nests$L[5,5],59.49994,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.5281734,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests$n[4,4],13) #n
-  expect_equal(testOutput2$nests$L[4,4],4.909484,tol=1e-4) #L
+  expect_equal(testOutput2$world$S[4,4],0.5399745,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests$n[4,4],12) #n
+  expect_equal(testOutput2$nests$L[4,4],5.276804,tol=1e-4) #L
 
   #Plot of results
   par(mfrow=c(3,1))

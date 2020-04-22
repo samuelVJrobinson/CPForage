@@ -49,7 +49,7 @@
 #' \itemize{
 #' \item \code{L_max}: maximum load (\eqn{\mu}L); numeric.
 #' \item \code{v}: maximum flight speed (m/s); numeric.
-#' \item \code{beta}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
+#' \item \code{betaVal}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
 #' \item \code{p_i}: rate of nectar uptake ("licking speed", \eqn{\mu}L/s); numeric.
 #' \item \code{h}: handling time before draining a flower (s); numeric.
 #' \item \code{c_f}: energetic cost of flight (J/s); numeric.
@@ -77,8 +77,7 @@
 #'            l=matrix(0,120,120),
 #'            f=matrix(0,120,120),
 #'            cellSize=cellSize) #Empty world
-#'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
-#'canola-filled cells
+#'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in canola-filled cells
 #'world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 #'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 #'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
@@ -89,23 +88,23 @@
 #'#Constants for foragers
 #'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
 #'                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-#'                       beta=0.102, #Proportion reduction in completely loaded
-#'                       flight speed (1-v/v_l)
+#'                       #Proportion reduction in completely loaded flight speed (1-v/v_l)
+#'                       beta=0.102,
 #'                       p_i=1, # Max loading rate (uL/s)
 #'                       h=1.5, #Handling time per flower (s)
-#'                       c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
-#'                       and Edelstein Keshet 1998)
+#'                       #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
+#'                       c_f=0.05,
 #'                       c_i=0.0042, #Cost of non-flying activity
 #'                       H=100 #Time spent in the hive (s)
 #'                       )
 #'
 #'#Nest structure (social rate maximizers)
-#'nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants)
+#'nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 #'
 #'#Run model
-#'testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=T)
+#'testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=TRUE)
 
-forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
+forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
   #Internal functions
   if(verbose) print('Starting setup...')
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
@@ -181,7 +180,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   nests$curr=matrix(0,nrow(world[[1]]),ncol(world[[1]])) #Currency
   htemp=nests$h
   nests$h=matrix(NA,nrow(world[[1]]),ncol(world[[1]]))
-  nests$h[world$mu>0]=htemp #Handling time - TEMPORARY: FOR FUTURE SCENARIOS, SHOULD BE LOOKED UP IN A TABLE
+  nests$h[world$mu>0]=htemp #Handling time
   #Number of foragers to move at each time step
   if(!is.null(nests$steps)){ #If the step number is defined by the user
     #Stops execution if steps are not defined properly
@@ -219,7 +218,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
     #Cuts off anything step size above maxN, making maxN the largest possible step
     nests$steps=c(floor(maxn),nests$steps[nests$steps<maxn])
     nests$steps=sort(unique(nests$steps),T) #Descending unique values only
-    rm(maxn,maxNfun) #Cleanup
+    rm(maxn,maxNfun,richest,fakeWorld,fakeNests) #Cleanup
   }
   nests$stepNum=1 #Starting point for the steps
 
@@ -269,7 +268,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
 
   #worstNests: represents world -transfer foragers in each cell
   if(!base$nests$sol){ #If nest uses social foraging
-    worst=makeWorst(base,whichNest=1,cluster=cluster)
+    worst=makeWorst(base,cluster=cluster)
   } else {
     worst=NA
   }
@@ -277,8 +276,9 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
   #bestNests: represents world +transfer foragers in each cell
   best=makeBest(base,parallel=parallel,cluster=cluster)
 
-  #Groups scenarios (best, base, worst) into scenario set for nest1
+  #Groups scenarios (best, base, worst) into scenario set
   nestSet=list(best=best,base=base,worst=worst)
+  rm(nests,world,best,base,worst,temp,htemp,occupied) #Cleanup structures outside of nestSet
 
   #Is nest "done"? (can't improve distribution any further)
   done=F
@@ -288,7 +288,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
 
   #Main loop
   while(!done){
-    if(verbose && (nitt %% 10)==0) print(paste('Iteration',nitt)) #Prints every 10 iterations
+    if(verbose && (nitt %% 100)==0) print(paste('Iteration',nitt)) #Prints every 100 iterations
     done=F #Resets each time that the nest is "not done"
 
     transfer=with(nestSet$base$nests,steps[stepNum]) #Number of foragers to transfer
@@ -301,6 +301,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=F,parallel=F,ncore=4,parMeth
         print(with(nestSet$base$nests,paste0('Finished pass ',stepNum,' of ',length(steps),
                                              '. Starting pass ',stepNum+1,'.')))
       }
+      # browser()
       nestSet$base$nests$stepNum=nestSet$base$nests$stepNum+1 #Increments step number
       #Creates new best scenario for nests
       tempBest=makeBest(nestSet$base,parallel=parallel,cluster=cluster)

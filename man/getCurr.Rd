@@ -18,9 +18,9 @@ getCurr(
   c_i,
   c_f,
   H,
-  beta,
-  S,
-  alphaVal = 5e-05
+  alphaVal,
+  betaVal,
+  S
 )
 }
 \arguments{
@@ -32,6 +32,14 @@ getCurr(
 
 \item{e}{Energetic value of nectar (J/\eqn{\muL})}
 
+\item{d}{Distance from hive (m)}
+
+\item{v}{Unloaded flight speed from hive (m/s)}
+
+\item{h}{Handling time per flower (s)}
+
+\item{f}{Flight time between flowers (s)}
+
 \item{l}{Maximum standing crop per flower (\eqn{\muL})}
 
 \item{p_i}{Licking speed for nectar (\eqn{\muL/s})}
@@ -40,21 +48,13 @@ getCurr(
 
 \item{c_f}{Cost of flight (J/s)}
 
-\item{beta}{Decrease in flight speed with load (m/s\eqn{\muL})}
+\item{H}{Time spent inside hive (s)}
+
+\item{alphaVal}{Increase in metabolic rate with load (J/(s*\eqn{\muL}))}
+
+\item{betaVal}{Decrease in flight speed with load (m/s\eqn{\muL})}
 
 \item{S}{Competition term (0-1)}
-
-\item{alphaVal}{Alpha-value (5e-5 by default)}
-
-\item{d_i}{Distance from hive (m)}
-
-\item{v_i}{Unloaded flight speed from hive (m/s)}
-
-\item{h_i}{Handling time per flower (s)}
-
-\item{f_i}{Flight time between flowers (s)}
-
-\item{H_i}{Time spent inside hive (s)}
 }
 \value{
 Currency, or vector of currencies
@@ -76,10 +76,12 @@ p_i=1,
 c_i=0.0042,
 c_f=0.05,
 H=100,
-beta=0.102)
+alphaVal=0.013,
+betaVal=0.102)
 
 with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
-           l,p_i,c_i,c_f,H,beta,S=1))
+           l,p_i,c_i,c_f,H,betaVal,S=1))
 with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
-           l,p_i,c_i,c_f,H,beta,S=0.5))
+           l,p_i,c_i,c_f,H,betaVal,S=0.5))
+
 }

@@ -6,15 +6,15 @@
 #'@param L Load size (\eqn{\muL})
 #'@param L_max Maximum load size (\eqn{\muL})
 #'@param e Energetic value of nectar (J/\eqn{\muL})
-#'@param d_i Distance from hive (m)
-#'@param v_i Unloaded flight speed from hive (m/s)
-#'@param h_i Handling time per flower (s)
-#'@param f_i Flight time between flowers (s)
+#'@param d Distance from hive (m)
+#'@param v Unloaded flight speed from hive (m/s)
+#'@param h Handling time per flower (s)
+#'@param f Flight time between flowers (s)
 #'@param l Maximum standing crop per flower (\eqn{\muL})
 #'@param p_i Licking speed for nectar (\eqn{\muL/s})
 #'@param c_i Cost of non-flying behaviour (J/s)
 #'@param c_f Cost of flight (J/s)
-#'@param H_i Time spent inside hive (s)
+#'@param H Time spent inside hive (s)
 #'@param alphaVal Increase in metabolic rate with load (J/(s*\eqn{\muL}))
 #'@param betaVal Decrease in flight speed with load (m/s\eqn{\muL})
 #'@param S Competition term (0-1)
@@ -43,6 +43,8 @@
 #'            l,p_i,c_i,c_f,H,betaVal,S=1))
 #'with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
 #'            l,p_i,c_i,c_f,H,betaVal,S=0.5))
+#'
+
 getCurr=function(whatCurr,L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
   if(is.na(whatCurr)|is.null(whatCurr)) stop('Currency not defined')
   switch(whatCurr,

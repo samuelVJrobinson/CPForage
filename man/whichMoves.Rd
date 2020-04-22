@@ -4,12 +4,10 @@
 \alias{whichMoves}
 \title{Which moves should be made}
 \usage{
-whichMoves(scenarioSet = NA, i = NA)
+whichMoves(scenarioSet = NA)
 }
 \arguments{
 \item{scenarioSet}{Scenario set for current simulation.}
-
-\item{i}{Which nest in current simulation should be used (currently set to 1)}
 }
 \value{
 List with three elements, \code{move}, \code{from}, and \code{to}.
@@ -20,7 +18,7 @@ should foragers be transfered FROM and TO.
 }
 \examples{
 #Create scenario
-nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
+nests<-list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
                    whatCurr="eff",sol=T,
                    eps=0,L_max=59.5,v=7.8,
                    beta=0.102,p_i=1,
@@ -29,7 +27,7 @@ nests<-list(nest1=list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
                       H=100,d=matrix(c(50,100,150),1),
                       L=matrix(rep(59.5,3),1),
                       curr=matrix(c(5,10,15),1),
-                      steps=5,stepNum=1))
+                      steps=5,stepNum=1)
 world<-list(mu=matrix(rep(8.33e-05,3),1),
            flDens=matrix(rep(520,3),1),
            e=matrix(rep(14.3,3),1),
@@ -41,11 +39,11 @@ baseScen=list(nests=nests,world=world)
 use=c(1,2,3)
 temp=lapply(use,optimLoadCurr,scenario=baseScen)
 baseScen$world$S[use]=sapply(temp,function(x) x$S) #Assigns S-values
-baseScen$nests[[1]]$L[use]=sapply(temp,function(x) x$optimL) #Assigns L
-baseScen$nests[[1]]$curr[use]=sapply(temp,function(x) x$optimCurr) #Assigns currency
+baseScen$nests$L[use]=sapply(temp,function(x) x$optimL) #Assigns L
+baseScen$nests$curr[use]=sapply(temp,function(x) x$optimCurr) #Assigns currency
 #Create scenario set
-bestScen=makeBest(baseScen,1)
-worstScen=makeWorst(baseScen,1)
+bestScen=makeBest(baseScen)
+worstScen=makeWorst(baseScen)
 scenSet=list(best=bestScen,base=baseScen,worst=worstScen)
-(moves=whichMoves(scenSet,1)) #What moves should foragers make?
+(moves=whichMoves(scenSet)) #What moves should foragers make?
 }

@@ -4,13 +4,11 @@
 \alias{moveForagers}
 \title{Move foragers from one cell to another, and re-calculate L, S, and curr}
 \usage{
-moveForagers(scenarioSet, i, moves)
+moveForagers(scenarioSet, moves)
 }
 \arguments{
 \item{scenarioSet}{Scenario set list, containing best, base, and worst
 scenarios (worst is NA for solitary foragers)}
-
-\item{i}{Which nest should be used? Currently defaults to 1.}
 
 \item{moves}{Move list from whichMoves, telling which cells to move from and
 to.}

@@ -9,8 +9,8 @@
 #'@return List of nests and world structure (scenario)
 #'
 #'@examples
-#'makeBest(base,parallel=T,cluster=cluster)
-makeBest <- function(scenario,parallel=F,cluster=NA){
+#'makeBest(base,parallel=TRUE,cluster=cluster)
+makeBest <- function(scenario,parallel=FALSE,cluster=NA){
   if(parallel&&is.na(cluster)) stop('Cluster not specified')
 
   transfer <- with(scenario$nests,steps[stepNum]) #Number of foragers to add

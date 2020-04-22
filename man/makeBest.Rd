@@ -4,12 +4,10 @@
 \alias{makeBest}
 \title{Create scenario with +TRANSFER more foragers}
 \usage{
-makeBest(scenario, whichNest = NA, parallel = F, cluster = NA)
+makeBest(scenario, parallel = FALSE, cluster = NA)
 }
 \arguments{
 \item{scenario}{Nest structure and world structure (scenario)}
-
-\item{whichNest}{Which nest should have TRANSFER foragers taken away?}
 
 \item{parallel}{Should computation be done in parallel?}
 
@@ -22,5 +20,5 @@ List of nests and world structure (scenario)
 Create and optimize currency in a world where -\code{transfer} foragers has been taken from nest(s) \code{whichnest}. Called within \code{forageMod}
 }
 \examples{
-makeBest(base,whichNest=1,parallel=T,cluster=cluster)
+makeBest(base,parallel=TRUE,cluster=cluster)
 }

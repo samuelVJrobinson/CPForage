@@ -4,12 +4,10 @@
 \alias{makeWorst}
 \title{Create scenario with -TRANSFER less foragers}
 \usage{
-makeWorst(scenario, whichNest = NA, parallel = F, cluster = NA)
+makeWorst(scenario, parallel = F, cluster = NA)
 }
 \arguments{
 \item{scenario}{Nest structure and world structure (scenario)}
-
-\item{whichNest}{Which nest should have TRANSFER foragers taken away?}
 
 \item{parallel}{Should computation be done in parallel?}
 
@@ -22,5 +20,5 @@ List of nests and world structure (scenario)
 Create and optimize currency in a world where -TRANSFER foragers has been taken from nest(s) WHICHNEST. Called within \code{forageMod}
 }
 \examples{
-makeWorst(base,whichNest=1,parallel=T,cluster=cluster)
+makeWorst(base,parallel=T,cluster=cluster)
 }

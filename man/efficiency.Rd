@@ -4,7 +4,7 @@
 \alias{efficiency}
 \title{Efficiency}
 \usage{
-efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, S, alphaVal = 5e-05)
+efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, alphaVal, betaVal, S)
 }
 \arguments{
 \item{L}{Load size (\eqn{\muL})}
@@ -19,6 +19,8 @@ efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, S, alphaVal = 5e-05)
 
 \item{h}{Handling time per flower (s)}
 
+\item{f}{Flight time between flowers (s)}
+
 \item{l}{Maximum standing crop per flower (\eqn{\muL})}
 
 \item{p_i}{Licking speed for nectar (\eqn{\muL/s})}
@@ -29,9 +31,11 @@ efficiency(L, L_max, e, d, v, h, f, l, p_i, c_i, c_f, H, S, alphaVal = 5e-05)
 
 \item{H}{Time spent inside hive (s)}
 
-\item{S}{Competition term (0-1)}
+\item{alphaVal}{Increase in metabolic rate with load (J/(s*\eqn{\muL}))}
 
-\item{alphaVal}{Alpha-value (5e-5 by default)}
+\item{betaVal}{Reduction in flight speed with increase in load}
+
+\item{S}{Competition term (0-1)}
 }
 \value{
 Efficiency (dimensionless). \eqn{Efficiency = \frac{Gains - Foraging
@@ -43,5 +47,7 @@ Returns Efficiency (ratio of profits/losses) for a forager in a given cell.
 }
 \examples{
 efficiency(L=50,L_max=50.5,e=14.35,d=100,v=7.8,
- h=1.5,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,S=0.5)
+ h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,S=0.5,
+ alphaVal=0.013,betaVal=0.102)
+
 }

@@ -8,8 +8,8 @@ forageMod(
   world,
   nests,
   iterlim = 5000,
-  verbose = F,
-  parallel = F,
+  verbose = FALSE,
+  parallel = FALSE,
   ncore = 4,
   parMethod = "SOCK",
   tol = .Machine$double.eps^0.25
@@ -50,7 +50,7 @@ Use \code{nests2df()} to convert this to a more readable dataframe. Currently
 this only works for individual aggregations of CP foragers.
 }
 \details{
-\code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} and \code{RMPI} (if using MPI) packages.
+\code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} (Windows) and \code{RMPI} (Linux) packages.
 
 \code{world} should be a named list containing:
 \itemize{
@@ -58,12 +58,13 @@ this only works for individual aggregations of CP foragers.
 \item \code{e}: energy value of nectar (J/\eqn{\mu}L); matrix
 \item \code{l}: maximum nectar standing crop (\eqn{\mu}L); matrix
 \item \code{f}: travel time between flowers (s); matrix
+\item \code{alphaVal}: Increase in metabolic rate with load; numeric.
 \item \code{flDens}: flower count per cell; matrix
 \item \code{cellSize}: size of a cell (m)
 \item \code{forageType}: foraging type. See \code{\link{curr}}.
 }
 
-\code{nests} should be a list of lists, each containing:
+\code{nests} should be a named list containing:
 \itemize{
 \item \code{xloc}: x-location of nest (column number) in world; integer.
 \item \code{yloc}: y-location of nest (row number) in world; integer.
@@ -74,13 +75,12 @@ this only works for individual aggregations of CP foragers.
 \itemize{
 \item \code{L_max}: maximum load (\eqn{\mu}L); numeric.
 \item \code{v}: maximum flight speed (m/s); numeric.
-\item \code{beta}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
+\item \code{betaVal}: reduction of flight speed with load (m/s*\eqn{\mu}L); numeric.
 \item \code{p_i}: rate of nectar uptake ("licking speed", \eqn{\mu}L/s); numeric.
 \item \code{h}: handling time before draining a flower (s); numeric.
 \item \code{c_f}: energetic cost of flight (J/s); numeric.
 \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 \item \code{H}: time spent in hive/aggregation (s); numeric.
-\item \code{alphaVal}: Alpha-value (5e-5 by default); numeric.
 }
 \item \code{eps}: accuracy to use for optimization; numeric.
 }
@@ -102,31 +102,30 @@ world1<-list(mu=matrix(0,120,120),
            l=matrix(0,120,120),
            f=matrix(0,120,120),
            cellSize=cellSize) #Empty world
-world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in
-canola-filled cells
+world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in canola-filled cells
 world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
 world1$forageType <- 'omniscient' #Foraging style for flowers within patch
+world1$alphaVal <- 0.013 #proportion increase in flight cost with load
 
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-                      beta=0.102, #Proportion reduction in completely loaded
-                      flight speed (1-v/v_l)
+                      #Proportion reduction in completely loaded flight speed (1-v/v_l)
+                      beta=0.102,
                       p_i=1, # Max loading rate (uL/s)
                       h=1.5, #Handling time per flower (s)
-                      c_f=0.05, #Unloaded flight energetic cost (J/s) (Dukas
-                      and Edelstein Keshet 1998)
+                      #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
+                      c_f=0.05,
                       c_i=0.0042, #Cost of non-flying activity
-                      H=100, #Time spent in the hive (s) (Seeley 1986 found
-                      100s and 70s for high and low intake rates)
-                      alphaVal=5e-05)
+                      H=100 #Time spent in the hive (s)
+                      )
 
 #Nest structure (social rate maximizers)
-nests1<-list(nest1=list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,constants=honeybeeConstants))
+nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 
 #Run model
-testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=T)
+testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=TRUE)
 }
