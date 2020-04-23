@@ -55,7 +55,6 @@ optimLoadCurr <- function(u,scenario){
                f_i=world$f[u],forageType=world$forageType,
                alphaVal=world$alphaVal[u])
 
-
   #Nest-level arguments (one for each nest involved)
   nestArgs <- arglist[c("L_max_i","n_i","p_i","f_i","d_i","v_i",
                      "beta_i","H_i","c_i","c_f","whatCurr_i","forageType")]
@@ -81,12 +80,12 @@ optimLoadCurr <- function(u,scenario){
 
   startL <- 0 #Use zero as the starting value for load
 
-  #L value and maximized currency value
-  optimL <- do.call(optimize,c(list(f=curr,interval=c(0,nests$L_max),maximum=T),arglist))
+  #L value and maximized currency value - tolerance needs to be < ~1e-7
+  optimL <- do.call(optimize,c(list(f=curr,interval=c(0,nests$L_max),maximum=TRUE,tol=1e-8),arglist))
 
   #Best currency given optimum load, and S-value for the cell
   #NOTE: this works for both solitary and social, because it calculates (currency | n); n is dealt with elsewhere
-  currencyS <- do.call(curr,c(list(L=optimL$maximum,sumAll=F),arglist)) #Named vector of currency and S-values
+  currencyS <- do.call(curr,c(list(L=optimL$maximum,sumAll=FALSE),arglist)) #Named vector of currency and S-values
   optimCurr <- currencyS[[1]]
   S <- currencyS[[2]]
 

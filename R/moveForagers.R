@@ -116,7 +116,6 @@ moveForagers <- function(scenarioSet,moves){ #Function to move foragers and upda
     baseScen$nests$curr[worst]=worstScen$nests$curr[worst] #Currency
     baseScen$world$S[worst]=worstScen$world$S[worst] #S-value
 
-
     #Step 2: Subtract foragers from worstNests, and bestNests
 
     #Move TRANSFER foragers out of (and into) worst (and best) cells in WORSTNESTS
@@ -140,7 +139,7 @@ moveForagers <- function(scenarioSet,moves){ #Function to move foragers and upda
     bestScen$nests$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L
     bestScen$nests$curr[which(use)]=sapply(temp,function(x) x$optimCurr) #Assigns currency
 
-    #For worstNests:
+    #For worstNests
     temp=lapply(which(use),optimLoadCurr,scenario=worstScen) #Run optimLoadCurr on all changed cells
     worstScen$world$S[which(use)]=sapply(temp,function(x) x$S) #Assigns S-values
     worstScen$nests$L[which(use)]=sapply(temp,function(x) x$optimL) #Assigns L

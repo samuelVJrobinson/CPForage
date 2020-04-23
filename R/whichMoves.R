@@ -111,7 +111,7 @@ whichMoves=function(scenarioSet=NA){ #Return list with best and worst cells
 
     #Step 1: find cell to move foragers FROM
 
-    #Currency intake in Current and -TRANSFER situation.
+    #Currency intake in Current and -TRANSFER situation (ie. currency losses incurred by move)
     diff1=nests$curr*nests$n-worstNests$curr*worstNests$n
 
     #Changes all NaNs to zero (in case of a -Inf+Inf situation, which arises when comparing foragers in a worthless cell versus fewer foragers in a worthless cell - summed currency difference b/w cells should still be 0)
@@ -130,7 +130,7 @@ whichMoves=function(scenarioSet=NA){ #Return list with best and worst cells
     #Step 2: Find cell to move foragers TO
     worstCurr=bestNests$curr[worst] #Saves currency in worst cell
     bestNests$curr[worst]=NA #Sets worst cell to NA so it won't be considered
-    #Currency intake in +TRANSFER situation - Current currency intake
+    #Currency intake in +TRANSFER situation - Current currency intake (ie. currency gains incurred by move)
     diff2=bestNests$curr*bestNests$n-nests$curr*nests$n
     #Location of cell with the greatest effect of adding TRANSFER foragers - best cell to move TO
     best=which(diff2==max(diff2,na.rm=T),arr.ind=T)
