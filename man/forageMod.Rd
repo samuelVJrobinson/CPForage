@@ -127,5 +127,5 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (198
 nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 
 #Run model
-testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=TRUE)
+testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
 }

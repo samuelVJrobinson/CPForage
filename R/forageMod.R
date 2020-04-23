@@ -102,7 +102,7 @@
 #'nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 #'
 #'#Run model
-#'testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=TRUE)
+#'testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
 
 forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
   #Internal functions
@@ -278,7 +278,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
 
   #Groups scenarios (best, base, worst) into scenario set
   nestSet=list(best=best,base=base,worst=worst)
-  rm(nests,world,best,base,worst,temp,htemp,occupied) #Cleanup structures outside of nestSet
+  rm(nests,world,best,base,worst,temp,htemp,occupied,nforagers) #Cleanup structures outside of nestSet
 
   #Is nest "done"? (can't improve distribution any further)
   done=F
@@ -301,7 +301,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
         print(with(nestSet$base$nests,paste0('Finished pass ',stepNum,' of ',length(steps),
                                              '. Starting pass ',stepNum+1,'.')))
       }
-      # browser()
       nestSet$base$nests$stepNum=nestSet$base$nests$stepNum+1 #Increments step number
       #Creates new best scenario for nests
       tempBest=makeBest(nestSet$base,parallel=parallel,cluster=cluster)

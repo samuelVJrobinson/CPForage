@@ -36,16 +36,30 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
 
 
 #Nest structure (social rate maximizers)
-nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,
+nests1<-list(xloc=1,yloc=1,n=10000,whatCurr='rat',sol=F,
                         constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 #Run model in serial
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (social efficiency maximizers)
-nests2<-list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=F,constants=honeybeeConstants,
-                        eps=0,steps=c(50,5,1))
+nests2<-list(xloc=1,yloc=1,n=10000,whatCurr='eff',sol=F,
+             constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
+
+# #Plot of results
+# par(mfrow=c(3,1))
+# plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$world$S[2:11,2:11]),xlab='Distance',ylab='S',pch=19,col='red',cex=1.3,main='Depletion',ylim=c(0,1))
+# points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$world$S[2:11,2:11]),pch=19)
+# abline(h=c(0,1),lty='dashed')
+# legend('topright',c('Efficiency','Net Rate'),fill=c('red','black'))
+#
+# plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$n[2:11,2:11]),xlab='Distance',ylab='Count',pch=19,col='red',cex=1.3,main='Forager number')
+# points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$n[2:11,2:11]),pch=19)
+#
+# plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$L[2:11,2:11]),xlab='Distance',ylab='L',pch=19,col='red',cex=1.3,main='Load size',
+#      ylim=c(0,max(c(testOutput2$nests$L,testOutput1$nests$L),na.rm=T)))
+# points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$L[2:11,2:11]),pch=19)
 
 test_that("Results in expected format",{
   expect_length(testOutput1,2) #Nest and world list
@@ -55,28 +69,14 @@ test_that("Results in expected format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.3462112,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests$n[5,5],10) #n
-  expect_equal(testOutput1$nests$L[5,5],59.49994,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.1103465,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests$n[5,5],39) #n
+  expect_equal(testOutput1$nests$L[5,5],28.51164,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[4,4],0.5399745,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests$n[4,4],12) #n
-  expect_equal(testOutput2$nests$L[4,4],5.276804,tol=1e-4) #L
-
-  #Plot of results
-  par(mfrow=c(3,1))
-  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$world$S[2:11,2:11]),xlab='Distance',ylab='S',pch=19,col='red',cex=1.3,main='Depletion',ylim=c(0,1))
-  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$world$S[2:11,2:11]),pch=19)
-  abline(h=c(0,1),lty='dashed')
-  legend('topright',c('Efficiency','Net Rate'),fill=c('red','black'))
-
-  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$n[2:11,2:11]),xlab='Distance',ylab='Count',pch=19,col='red',cex=1.3,main='Forager number')
-  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$n[2:11,2:11]),pch=19)
-
-  plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$L[2:11,2:11]),xlab='Distance',ylab='L',pch=19,col='red',cex=1.3,main='Load size',
-       ylim=c(0,max(c(testOutput2$nests$L,testOutput1$nests$L),na.rm=T)))
-  points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$L[2:11,2:11]),pch=19)
+  expect_equal(testOutput2$world$S[5,5],0.2429991,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests$n[5,5],114) #n
+  expect_equal(testOutput2$nests$L[5,5],0.7120029,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{
