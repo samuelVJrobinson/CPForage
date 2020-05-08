@@ -69,14 +69,14 @@ test_that("Results in expected format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.1103465,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests$n[5,5],39) #n
-  expect_equal(testOutput1$nests$L[5,5],28.51164,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.112948,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests$n[5,5],38) #n
+  expect_equal(testOutput1$nests$L[5,5],29.44825,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[5,5],0.2429991,tol=1e-4) #S-value
+  expect_equal(testOutput2$world$S[5,5],0.2430017,tol=1e-4) #S-value
   expect_equal(testOutput2$nests$n[5,5],114) #n
-  expect_equal(testOutput2$nests$L[5,5],0.7120029,tol=1e-4) #L
+  expect_equal(testOutput2$nests$L[5,5],0.7119991,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{

@@ -50,6 +50,12 @@ efficiency <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
   ForagingLoss <- ForageLossHandling+ForageLossFlying #Total foraging loss
   HiveLoss <- c_i*H #Loss within hive
 
+  #BS checking
+  if(any(c(Gains,FlightLoss,ForagingLoss,HiveLoss)<0)){ #Gains/losses can't be negative
+    stop(paste0('Efficiency calcs failed:\nGains=',Gains,'\nFlightLoss=',FlightLoss,
+                '\nForagingLoss=',ForagingLoss,'\nHiveLoss=',HiveLoss))
+  }
+
   Efficiency <- (Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightLoss+ForagingLoss+HiveLoss)
 
   return(Efficiency)

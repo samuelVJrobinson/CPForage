@@ -234,6 +234,7 @@ curr <- function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr
     )
   }
   #If S is greater than 1, sets it back to 1 (flowers can't give more than their max).
+  if(is.nan(S)) stop('S = NaN (divide by zero)')
   if(S>1) S=1
 
   #Calculate currency

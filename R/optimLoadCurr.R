@@ -33,14 +33,12 @@ optimLoadCurr <- function(u,scenario){
     stop('Too many cells provided. Use lapply to pass cells. e.g. lapply(use,optimLoadCurr,scenario=scenario)')
   }
 
-  emptyNest <- nests$n[u]<1 #Is cell u empty?
-
-  #If cell u is empty, returns NA values for L, 0 for curr, and 1 for S
-  if(emptyNest){
-    return(list('optimL'=NA,'optimCurr'=0,'S'=1)) #No competition in completely empty cells
+  #If cell u has no foragers, returns NA values for L, 0 for curr, and 1 for S
+  if(nests$n[u]<1){
+    return(list('optimL'=NA,'optimCurr'=0,'S'=1)) #No competition in unoccupied cells
   }
 
-  #Arguments to feed to optim, which optim feeds to curr
+    #Arguments to feed to optim, which optim feeds to curr
   arglist=list(L_max_i=nests$L_max,n_i=nests$n[u],
                h_i=nests$h[u],
                p_i=nests$p_i,
@@ -73,15 +71,14 @@ optimLoadCurr <- function(u,scenario){
   }
 
   #If anything in the patch-level argument list is NA or <=0, returns NA values - indicates worthless patch
-  if(any(is.na(patchArgs)||patchArgs<=0)) {
-    #Nest-specific numbers are named after corresponding nest
+  if(any(is.na(patchArgs)|patchArgs<=0)) {
     return(list('optimL'=NA,'optimCurr'= switch(nests$whatCurr,eff=-1,rat=-Inf),'S'=NA))
   }
 
   startL <- 0 #Use zero as the starting value for load
 
   #L value and maximized currency value - tolerance needs to be < ~1e-7
-  optimL <- do.call(optimize,c(list(f=curr,interval=c(0,nests$L_max),maximum=TRUE,tol=1e-8),arglist))
+  optimL <- do.call(optimize,c(list(f=curr,interval=c(0,nests$L_max),maximum=TRUE,tol=1e-10),arglist))
 
   #Best currency given optimum load, and S-value for the cell
   #NOTE: this works for both solitary and social, because it calculates (currency | n); n is dealt with elsewhere

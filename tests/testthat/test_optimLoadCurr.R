@@ -15,9 +15,9 @@ test_that('Currency calculations work properly',{
   #Efficiency maximizers
   test1 <- optimLoadCurr(u,scenario)
 
-  expect_equal(test1$optimL,0.01164245,tol=1e-05)
-  expect_equal(test1$optimCurr,-0.6996081,tol=1e-6)
-  expect_equal(test1$S,0.01229033,tol=1e-6)
+  expect_equal(test1$optimL,0.01166378,tol=1e-05)
+  expect_equal(test1$optimCurr,-0.699238,tol=1e-6)
+  expect_equal(test1$S,0.01166378,tol=1e-6)
 
   #Rate maximizers
   scenario$nests$whatCurr='rat'
@@ -25,9 +25,9 @@ test_that('Currency calculations work properly',{
 
   #Despite having a theoretical load size of L_max, rate-maximizers have similar
   #optimal Load size to efficiency-maximizers (at least a high forager numbers)
-  expect_equal(test1b$optimL,0.01197626,tol=1e-6)
-  expect_equal(test1b$optimCurr,-0.003689797,tol=1e-6)
-  expect_equal(test1b$S,0.006198053,tol=1e-6)
+  expect_equal(test1b$optimL,0.01199668,tol=1e-6)
+  expect_equal(test1b$optimCurr,-0.003687522,tol=1e-6)
+  expect_equal(test1b$S,0.005998343,tol=1e-6)
 
   #Omniscient foraging style:
 
@@ -37,17 +37,17 @@ test_that('Currency calculations work properly',{
 
   test1<-optimLoadCurr(u,scenario)
 
-  expect_equal(test1$optimL,0.01179749,tol=1e-6)
-  expect_equal(test1$optimCurr,-0.6957395,tol=1e-6)
-  expect_equal(test1$S,0.01197447,tol=1e-6)
+  expect_equal(test1$optimL,0.01180145,tol=1e-6)
+  expect_equal(test1$optimCurr,-0.6956886,tol=1e-6)
+  expect_equal(test1$S,0.01180145,tol=1e-6)
 
   #Rate maximizers
   scenario$nests$whatCurr <- 'rat'
   test1b <- optimLoadCurr(u,scenario)
 
-  expect_equal(test1b$optimL,0.01201929,tol=1e-6)
-  expect_equal(test1b$optimCurr,-0.003683093,tol=1e-6)
-  expect_equal(test1b$S,0.006626035,tol=1e-6)
+  expect_equal(test1b$optimL,0.01206909,tol=1e-6)
+  expect_equal(test1b$optimCurr,-0.003677716,tol=1e-6)
+  expect_equal(test1b$S,0.006034544,tol=1e-6)
 })
 
 test_that('Exception handling works properly',{
@@ -61,12 +61,17 @@ test_that('Exception handling works properly',{
   scenario$nests$n <- 382 #Resets forager number
 
   #Worthless patch
-  scenario$world$mu <- 0 #Sets per flower production to 0
+  scenario$world$mu <- 0 #Sets per nectar production to 0
   test3 <- optimLoadCurr(u,scenario)
   expect_equivalent(test3$optimL,NA) #L should be NA
   expect_equivalent(test3$optimCurr,-1) #curr should be -1 (or -Inf for rate maximizers)
   expect_identical(test3$S,NA) #S should be NA
-  scenario$world$mu <- 8.33e-05
+  scenario$world$mu <- 8.33e-05 #Reset nectar production
+
+  #Patch arguments incorrect - flDens = 0, but other arguments >0
+  scenario$world$flDens <- 0
+  expect_equivalent(optimLoadCurr(u,scenario)$optimL,NA)
+  scenario$world$flDens <- 520
 
   #Forager arguments NA
   scenario$nests$whatCurr <- NA

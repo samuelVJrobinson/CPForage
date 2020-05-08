@@ -63,6 +63,12 @@ netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
   HiveLoss <- c_i*H
   HiveTime <- H
 
+  if(any(c(Gains,FlightLoss,ForagingLoss,HiveLoss,FlightTime,ForagingTime,HiveTime)<0)){ #Gains/losses and time can't be negative
+    stop(paste0('Net rate calcs failed:\nGains=',Gains,'\nFlightLoss=',FlightLoss,
+                '\nForagingLoss=',ForagingLoss,'\nHiveLoss=',HiveLoss))
+  }
+
+
   NetRate <- (Gains-FlightLoss-ForagingLoss-HiveLoss)/(FlightTime+ForagingTime+HiveTime)
 
   return(NetRate)
