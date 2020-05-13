@@ -27,7 +27,7 @@ world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       v=7.8, #Velocity (m/s) - Unloaded flight speed
-                      beta=0.102, #Proportion reduction in completely loaded flight speed (1-v/v_l)
+                      betaVal=0.102, #Proportion reduction in completely loaded flight speed (1-v/v_l)
                       p_i=1, # Max loading rate (uL/s)
                       h=1.5, #Handling time per flower (s)
                       c_f=0.05, #Unloaded flight energetic cost (J/s)
@@ -69,9 +69,9 @@ test_that("Results in expected format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.112948,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests$n[5,5],38) #n
-  expect_equal(testOutput1$nests$L[5,5],29.44825,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.1103465,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests$n[5,5],39) #n
+  expect_equal(testOutput1$nests$L[5,5],28.51164,tol=1e-4) #L
 
   #World 2
   expect_equal(testOutput2$world$S[5,5],0.2430017,tol=1e-4) #S-value

@@ -93,39 +93,45 @@ flDens<-520 #Flower density/m2
 e_i<-14.35 #Energetic value/unit
 l_i<-1 #Canola standing crop (1uL)
 f_i<-0.86 #Inter-flower flight time
+
 #World structure
 cellSize<-10 #10m cells (100m^2)
 worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth nothing)
-world1<-list(mu=matrix(0,120,120),
-           flDens=matrix(0,120,120),
-           e=matrix(0,120,120),
-           l=matrix(0,120,120),
-           f=matrix(0,120,120),
-           cellSize=cellSize) #Empty world
+world1<-list(mu=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            flDens=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            e=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            l=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            f=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            alphaVal=matrix(0,worldSize/cellSize,worldSize/cellSize),
+            cellSize=cellSize) #Empty world
+
 world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in canola-filled cells
 world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
+world1$alphaVal[c(2:11),c(2:11)] <- 0.013 #proportion increase in flight cost with load
+
 world1$forageType <- 'omniscient' #Foraging style for flowers within patch
-world1$alphaVal <- 0.013 #proportion increase in flight cost with load
 
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
-                      v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-                      #Proportion reduction in completely loaded flight speed (1-v/v_l)
-                      beta=0.102,
-                      p_i=1, # Max loading rate (uL/s)
-                      h=1.5, #Handling time per flower (s)
-                      #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
-                      c_f=0.05,
-                      c_i=0.0042, #Cost of non-flying activity
-                      H=100 #Time spent in the hive (s)
-                      )
+                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
+                       betaVal=0.102, #Reduction of flight speed with load (1-v/v_l)
+                       p_i=1, # Max loading rate (uL/s)
+                       h=1.5, #Handling time per flower (s)
+                       #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
+                       c_f=0.05,
+                       c_i=0.0042, #Cost of non-flying activity
+                       H=100 #Time spent in the hive (s)
+                       )
 
 #Nest structure (social rate maximizers)
 nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 
 #Run model
 testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
+
+#Visualize distribution of foragers
+image(testOutput1$nests$n)
 }

@@ -37,14 +37,16 @@ efficiency <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
 
   ForageLossHandling <- (L*c_i*(S*l*p_i+h))/(S*l) #Energy required to extract necter
 
-  if(L/S*l<1){
-    ForageLossFlying = 0  #Only 1 flower visited, so no intra-patch movement needed
+  nFlwVis <- L/(S*l) #Number of flowers visited in a trip
+
+  if(nFlwVis<1){
+    ForageLossFlying <- 0  #Only 1 flower visited, so no intra-patch movement needed
   } else {
     #Energetic losses while flying from flower-to-flower
-    ForageLossFlying <- c_f*f*((S^2*alphaVal*betaVal*(L/(S*l)-1)*l^2+2*S^2*alphaVal*betaVal*(L/(S*l)-1)^3*l^2+
-                   3*S^2*alphaVal*betaVal*(L/(S*l)-1)^2*l^2)/(6*L_max)+(S*betaVal*(L/(S*l)-1)*l+
-                   S*betaVal*(L/(S*l)-1)^2*l)/(2*L_max)+(S*alphaVal*(L/(S*l)-1)*l+
-                   S*alphaVal*(L/(S*l)-1)^2*l)/2+L/(S*l)-1)
+    ForageLossFlying <- c_f*f*((S^2*alphaVal*betaVal*(nFlwVis-1)*l^2+2*S^2*alphaVal*betaVal*(nFlwVis-1)^3*l^2+
+                   3*S^2*alphaVal*betaVal*(nFlwVis-1)^2*l^2)/(6*L_max)+(S*betaVal*(nFlwVis-1)*l+
+                   S*betaVal*(nFlwVis-1)^2*l)/(2*L_max)+(S*alphaVal*(nFlwVis-1)*l+
+                   S*alphaVal*(nFlwVis-1)^2*l)/2+nFlwVis-1)
   }
 
   ForagingLoss <- ForageLossHandling+ForageLossFlying #Total foraging loss

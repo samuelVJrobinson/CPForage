@@ -4,7 +4,7 @@ context('Movement selection function (whichMoves)')
 nests<-list(xloc=1,yloc=1,n=matrix(c(5,10,15),1),
                        whatCurr="eff",sol=T,
                        eps=0,L_max=59.5,v=7.8,
-                       beta=0.102,p_i=1,
+                       betaVal=0.102,p_i=1,
                        h=matrix(rep(1.5,3)),
                        c_f=0.05,c_i=0.0042,
                        H=100,d=matrix(c(50,100,150),1),

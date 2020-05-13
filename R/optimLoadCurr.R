@@ -22,11 +22,10 @@ optimLoadCurr <- function(u,scenario){
     stop('Nest-level arguments are NA or length==0')
   }
   #If any arguments are missing from nests
-  argNames <- c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","beta","p_i",
+  argNames <- c("xloc","yloc","n","whatCurr","sol","eps","L_max","v","betaVal","p_i",
              "h","c_f","c_i","H","d","L","curr")
   if(any(!argNames %in% names(nests))){
-    stop('Nest-level arguments are missing for: ',paste(names(nests)[sapply(nests,function(x)
-      any(!argNames %in% names(x)))],sep=','))
+    stop('Nest-level arguments are missing for: ',paste(names(nests)[!argNames %in% names(nests)],collapse=', '))
   }
   #If there are too many cells provided
   if(length(u)>1) {

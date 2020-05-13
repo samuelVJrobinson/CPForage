@@ -1,7 +1,7 @@
 context('Currency-load optimization function (optimLoadCurr)')
 
 nests<-list(xloc=1,yloc=1,n=382,whatCurr="eff",sol=FALSE,
-             eps=0,L_max=59.5,v=7.8,beta=0.102,p_i=1,
+             eps=0,L_max=59.5,v=7.8,betaVal=0.102,p_i=1,
              h=1.5,c_f=0.05,c_i=0.0042,H=100,d=10,
              L=59.5,curr=0)
 world<-list(mu=8.33e-05,flDens=520,e=14.3,l=1,alphaVal=0.013,
@@ -25,9 +25,9 @@ test_that('Currency calculations work properly',{
 
   #Despite having a theoretical load size of L_max, rate-maximizers have similar
   #optimal Load size to efficiency-maximizers (at least a high forager numbers)
-  expect_equal(test1b$optimL,0.01199668,tol=1e-6)
-  expect_equal(test1b$optimCurr,-0.003687522,tol=1e-6)
-  expect_equal(test1b$S,0.005998343,tol=1e-6)
+  expect_equal(test1b$optimL,0.01166378,tol=1e-6)
+  expect_equal(test1b$optimCurr,-0.003725871,tol=1e-6)
+  expect_equal(test1b$S,0.01166378,tol=1e-6)
 
   #Omniscient foraging style:
 
@@ -45,9 +45,9 @@ test_that('Currency calculations work properly',{
   scenario$nests$whatCurr <- 'rat'
   test1b <- optimLoadCurr(u,scenario)
 
-  expect_equal(test1b$optimL,0.01206909,tol=1e-6)
-  expect_equal(test1b$optimCurr,-0.003677716,tol=1e-6)
-  expect_equal(test1b$S,0.006034544,tol=1e-6)
+  expect_equal(test1b$optimL,0.01180145,tol=1e-6)
+  expect_equal(test1b$optimCurr,-0.003706958,tol=1e-6)
+  expect_equal(test1b$S,0.01180145,tol=1e-6)
 })
 
 test_that('Exception handling works properly',{

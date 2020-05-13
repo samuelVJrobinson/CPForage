@@ -1,5 +1,5 @@
 #Convert model runs to dataframes
-nests2df=function(modelRun){
+nests2df <- function(modelRun){
   require(dplyr)
   require(tidyr)
   convertNest=function(i,nes){

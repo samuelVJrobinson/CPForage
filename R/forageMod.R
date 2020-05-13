@@ -67,44 +67,49 @@
 #'e_i<-14.35 #Energetic value/unit
 #'l_i<-1 #Canola standing crop (1uL)
 #'f_i<-0.86 #Inter-flower flight time
-#
+#'
 #'#World structure
 #'cellSize<-10 #10m cells (100m^2)
 #'worldSize<-120 #120x120m field (100x100m field with 10m buffer zone worth nothing)
-#'world1<-list(mu=matrix(0,120,120),
-#'            flDens=matrix(0,120,120),
-#'            e=matrix(0,120,120),
-#'            l=matrix(0,120,120),
-#'            f=matrix(0,120,120),
-#'            cellSize=cellSize) #Empty world
+#'world1<-list(mu=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             flDens=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             e=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             l=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             f=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             alphaVal=matrix(0,worldSize/cellSize,worldSize/cellSize),
+#'             cellSize=cellSize) #Empty world
+#'
 #'world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in canola-filled cells
 #'world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 #'world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 #'world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
 #'world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
+#'world1$alphaVal[c(2:11),c(2:11)] <- 0.013 #proportion increase in flight cost with load
+#'
 #'world1$forageType <- 'omniscient' #Foraging style for flowers within patch
-#'world1$alphaVal <- 0.013 #proportion increase in flight cost with load
 #'
 #'#Constants for foragers
 #'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
-#'                       v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-#'                       #Proportion reduction in completely loaded flight speed (1-v/v_l)
-#'                       beta=0.102,
-#'                       p_i=1, # Max loading rate (uL/s)
-#'                       h=1.5, #Handling time per flower (s)
-#'                       #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
-#'                       c_f=0.05,
-#'                       c_i=0.0042, #Cost of non-flying activity
-#'                       H=100 #Time spent in the hive (s)
-#'                       )
+#'                        v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
+#'                        betaVal=0.102, #Reduction of flight speed with load (1-v/v_l)
+#'                        p_i=1, # Max loading rate (uL/s)
+#'                        h=1.5, #Handling time per flower (s)
+#'                        #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
+#'                        c_f=0.05,
+#'                        c_i=0.0042, #Cost of non-flying activity
+#'                        H=100 #Time spent in the hive (s)
+#'                        )
 #'
 #'#Nest structure (social rate maximizers)
 #'nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=FALSE,constants=honeybeeConstants,eps=0)
 #'
 #'#Run model
 #'testOutput1<-forageMod(world1,nests1,2000,verbose=FALSE,parallel=FALSE)
+#'
+#'#Visualize distribution of foragers
+#'image(testOutput1$nests$n)
 
-forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
+forageMod <- function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4,parMethod='SOCK',tol=.Machine$double.eps^0.25){
   #Internal functions
   if(verbose) print('Starting setup...')
   decimalplaces <- function(x) { #Convenience function for finding number of decimal places
@@ -115,20 +120,6 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
     }
   }
   #INPUT CHECKING:
-  if(is.null(names(nests))){ #Checks for NULL or empty nest names
-    if(length(nests)==1) names(nests)='nest1' else names(nests)=paste(rep('nest',length(nests)),1:length(nests),sep='')
-    warning('Nests unnamed. Providing names.')
-  } else if(any(nchar(names(nests))==0)) {
-    #Provides a new name
-    names(nests)=ifelse(nchar(names(nests))==0,paste('nests',which(nchar(names(nests))==0),sep=''),names(nests))
-    warning('Some nests are unnamed. Providing name for unnamed nests.')
-  }
-  if(length(names(nests))>1 & any(duplicated(names(nests)))) {
-    names(nests)[duplicated(names(nests))]=
-      replicate(sum(duplicated(names(nests))),paste(cbind(sample(letters,8)),collapse=''))
-    warning('Duplicate nest names. Providing random names to duplicate nests.')
-  }
-
   #Check entry values for nests
   if(any(!(c("xloc","yloc","n","whatCurr","sol","constants","eps") %in% names(nests)))){
     stop('Each CPF nest requires the following arguments:\n "xloc","yloc","n","whatCurr","sol","constants","eps"')
@@ -140,8 +131,8 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
   stopifnot(is.logical(nests$sol)) #Solitary/social
   stopifnot(is.list(nests$constants)) #Forager constants
   stopifnot(is.numeric(nests$eps),nests$eps>=0) #Eps term
-  if(any(!(c("L_max","v","beta","p_i","h","c_f","c_i","H") %in% names(nests$constants)))){
-    stop('Forager constants for each CPF nest require the following arguments:\n "L_max" "v" "beta" "p_i" "h" "c_f" "c_i" "H"')
+  if(any(!(c("L_max","v","betaVal","p_i","h","c_f","c_i","H") %in% names(nests$constants)))){
+    stop('Forager constants for each CPF nest require the following arguments:\n "L_max" "v" "betaVal" "p_i" "h" "c_f" "c_i" "H"')
   }
   if(any(sapply(nests$constants,function(x) any(!c(is.numeric(x),x>0))))){
     stop('Forager constants must be numeric, and >0')
@@ -152,11 +143,12 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
     stop('Each world requires the following arguments:\n "mu" "flDens" "e" "l" "f" "cellSize" "forageType"')
   }
   #Are matrices appropriately defined?
-  stopifnot(!any(!sapply(world[c('mu','flDens','e','l','f')],is.matrix)),
-            !any(!sapply(world[c('mu','flDens','e','l','f')],is.numeric)),
-            !any(!sapply(world[c('mu','flDens','e','l','f')],function(x) min(x)>=0)))
-  stopifnot(length(unique(sapply(world[c('mu','flDens','e','l','f')],ncol)))==1, #Dimension checking
-            length(unique(sapply(world[c('mu','flDens','e','l','f')],nrow)))==1)
+  worldMats <- c('mu','flDens','e','l','f','alphaVal') #Matrices from world
+  stopifnot(!any(!sapply(world[worldMats],is.matrix)),
+            !any(!sapply(world[worldMats],is.numeric)),
+            !any(!sapply(world[worldMats],function(x) min(x)>=0)))
+  stopifnot(length(unique(sapply(world[worldMats],ncol)))==1, #Dimension checking
+            length(unique(sapply(world[worldMats],nrow)))==1)
   stopifnot(is.numeric(world$cellSize),world$cellSize>0,is.character(world$forageType))
 
   #SETUP
@@ -167,10 +159,10 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
   #Set-up nests
   nests <- c(nests,nests$constants)
   nests$constants <- NULL
-  nforagers=nests$n #Gets number of foragers for the nest
+  nforagers <- nests$n #Gets number of foragers for the nest
   #Creates empty vector of forager numbers at each location in the world
-  nests$n=matrix(0,nrow(world[[1]]),ncol(world[[1]]))
-  nests$n[nests$yloc,nests$xloc]=nforagers #Places foragers next to nest
+  nests$n <- matrix(0,nrow(world[[1]]),ncol(world[[1]]))
+  nests$n[nests$yloc,nests$xloc] <- nforagers #Places foragers next to nest
   #Calculates absolute distance of each cell from nest
   nests$d=sqrt((((row(world[[1]])-nests$yloc)*world$cellSize)^2)+(((col(world[[1]])-nests$xloc)*world$cellSize)^2))
   nests$d=nests$d+min(nests$d[nests$d!=0])/2 #Adds half minimum distance (prevents 0 flying distance)
@@ -194,6 +186,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
     fakeNests$d=min(fakeNests$d[fakeNests$d!=0],na.rm=T) #minimum nonzero distance
     fakeNests$L=fakeNests$L_max #L_max
     fakeNests$curr=0
+
     fakeWorld=world #Copy of world
     richest=which.max(fakeWorld$mu*fakeWorld$flDens*fakeWorld$e)
     fakeWorld$mu=fakeWorld$mu[richest] #Mu from richest patch
@@ -201,16 +194,18 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
     fakeWorld$e=fakeWorld$e[richest] #e ...
     fakeWorld$l=fakeWorld$l[richest] #l
     fakeWorld$f=fakeWorld$f[richest] #f
+    fakeWorld$alphaVal <- fakeWorld$alphaVal[richest] #alpha
     fakeWorld$S=1 #No competition (initially)
+
     #Function to return currency in a cell given n foragers
-    maxNfun=function(n,fakeNests,fakeWorld,eps){
+    maxNfun <- function(n,fakeNests,fakeWorld,eps){
       fakeNests$n=n
       temp=optimLoadCurr(1,list(nests=fakeNests,world=fakeWorld))
       return(abs(temp$S-eps)) #Return S-value at given n
     }
     #Number of foragers where S goes to Smin (essentially upper limit to step size)
     #Simulation indicates that Smin should optimally be around 0.18 for multi-core, 0.3 for serial runs.
-    maxn=optimize(maxNfun,interval=c(0,max(nests$n)),fakeNests=fakeNests,
+    maxn <- optimize(maxNfun,interval=c(0,max(nests$n)),fakeNests=fakeNests,
                   fakeWorld=fakeWorld,eps=0.5)$min
     #Simulation indicates that phi should be around 4.3, Smin around 0.7
     nests$steps=round(nforagers*1/(10^(seq(1,10,4.3)))) #Initial distribution
@@ -222,8 +217,9 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
   }
   nests$stepNum=1 #Starting point for the steps
 
-  #Load parallel processing
+  #Load parallel processing - needs to be tested on different machines
   if(parallel){
+
     if(verbose) cat('Loading parallel processing libraries...')
 
     #Set up ncore number of clusters for parallel processing
@@ -324,7 +320,7 @@ forageMod=function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncore=4
   #Calculate patch residence times per forager (in seconds)
   nestSet$base$nests$loadingTime=with(nestSet$base,
                   ifelse(nests$n>0,nests$L*(nests$h+world$S*world$l*nests$p_i+world$f)/world$S*world$l,NA))
-  nestSet$base$nests$travelTime=with(nestSet$base$nests,ifelse(n>0,(d*(2-beta*(L/L_max)))/(v*(1-beta*(L/L_max))),NA))
+  nestSet$base$nests$travelTime=with(nestSet$base$nests,ifelse(n>0,(d*(2-betaVal*(L/L_max)))/(v*(1-betaVal*(L/L_max))),NA))
   nestSet$base$nests$boutLength=with(nestSet$base$nests,loadingTime+travelTime+H) #Time for 1 complete foraging bout
 
   if(parallel) {
