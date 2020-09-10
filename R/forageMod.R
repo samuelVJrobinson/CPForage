@@ -56,6 +56,7 @@
 #' \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 #' \item \code{H}: time spent in hive/aggregation (s); numeric.
 #' }
+#' \item \code{steps}: step sizes to use during optimization; numeric vector.
 #' \item \code{eps}: accuracy to use for optimization; numeric.
 #' }
 #'
@@ -282,21 +283,33 @@ forageMod <- function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncor
   startTime <- Sys.time() #Starting time
   if(verbose) print(paste('Simulation started at',startTime))
 
+  pastMoves <- data.frame(from=c(-1,-1),to=c(-1,-1)) #Set of past moves to watch
+
   #Main loop
   while(!done){
     if(verbose && (nitt %% 100)==0) print(paste('Iteration',nitt)) #Prints every 100 iterations
-    done=F #Resets each time that the nest is "not done"
+    done <- F #Resets each time that the nest is "not done"
 
-    transfer=with(nestSet$base$nests,steps[stepNum]) #Number of foragers to transfer
-    moves=whichMoves(nestSet) #Worst and best cells
+    transfer <- with(nestSet$base$nests,steps[stepNum]) #Number of foragers to transfer
+    moves <- whichMoves(nestSet) #Worst and best cells
+
+    #Saves state of past 2 moves
+    pastMoves[2,] <- pastMoves[1,]
+    if(moves$move) pastMoves[1,] <- c(which(moves$from),which(moves$to))
+
+    #Checks whether past 2 moves are inverses of each other (i.e. back-and-forth transfer)
+    if(with(pastMoves,from[1]==to[2] & from[2]==to[1])){
+      stop(c('2 back-and-forth moves occuring in cells:',pastMoves))
+    }
+
     if(moves$move){ #If a move should be made
-      #This is not properly taking away foragers from worstNests
-      nestSet=moveForagers(nestSet,moves) #Moves foragers from cell to cell
+      nestSet <- moveForagers(nestSet,moves) #Moves foragers from cell to cell
     } else if(transfer>1) { #If transfer number is >1 (i.e. not at the end of the list)
       if(verbose){
         print(with(nestSet$base$nests,paste0('Finished pass ',stepNum,' of ',length(steps),
                                              '. Starting pass ',stepNum+1,'.')))
       }
+      pastMoves <- data.frame(from=c(-1,-1),to=c(-1,-1)) #Resets past move list
       nestSet$base$nests$stepNum=nestSet$base$nests$stepNum+1 #Increments step number
       #Creates new best scenario for nests
       tempBest=makeBest(nestSet$base,parallel=parallel,cluster=cluster)
@@ -312,7 +325,7 @@ forageMod <- function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncor
     #If nests are "done", loop should exit
     nitt=nitt+1 #Increment counter
     if(nitt==iterlim) {
-      if(verbose) print('Iteration limit reached')
+      warning('Iteration limit reached')
       break
     }
   } #End of WHILE loop

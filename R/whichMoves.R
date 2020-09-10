@@ -1,7 +1,7 @@
 #' Which moves should be made
 #'
 #' Helper function to decide if any moves should be made, and if so, where
-#' should foragers be transfered FROM and TO.
+#' should foragers be transferred FROM and TO.
 #'
 #' @param scenarioSet Scenario set for current simulation.
 #'

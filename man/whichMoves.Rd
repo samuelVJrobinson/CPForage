@@ -14,7 +14,7 @@ List with three elements, \code{move}, \code{from}, and \code{to}.
 }
 \description{
 Helper function to decide if any moves should be made, and if so, where
-should foragers be transfered FROM and TO.
+should foragers be transferred FROM and TO.
 }
 \examples{
 #Create scenario

@@ -82,6 +82,7 @@ this only works for individual aggregations of CP foragers.
 \item \code{c_i}: energetic cost of non-flight (J/s); numeric.
 \item \code{H}: time spent in hive/aggregation (s); numeric.
 }
+\item \code{steps}: step sizes to use during optimization; numeric vector.
 \item \code{eps}: accuracy to use for optimization; numeric.
 }
 }
