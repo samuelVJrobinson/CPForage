@@ -46,8 +46,7 @@ distribution (IFD). Takes a list of nest parameters, and a list of world
 parameters, runs the model until convergence, and then returns a list
 containing a matrix of competitive effects, and a list of matrices of foraging
 parameters (e.g. time in patch, foraging currency experienced at each cell).
-Use \code{nests2df()} to convert this to a more readable dataframe. Currently
-this only works for individual aggregations of CP foragers.
+Use \code{cpf2df()} to convert this to a more readable dataframe.
 }
 \details{
 \code{parMethod} must be either \code{'SOCK'} (Default) or \code{'MPI'}. Requires \code{doSNOW} (Windows) and \code{RMPI} (Linux) packages.
@@ -110,7 +109,7 @@ world1$mu[c(2:11),c(2:11)]<-nu_i #Per-flower nectar production in canola-filled 
 world1$flDens[c(2:11),c(2:11)]<-flDens*cellSize^2 #Flower number per cell
 world1$e[c(2:11),c(2:11)]<-e_i #Energy production in canola-filled cells
 world1$l[c(2:11),c(2:11)]<-l_i #Standing crop in cells with no competition
-world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
+world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev
 world1$alphaVal[c(2:11),c(2:11)] <- 0.013 #proportion increase in flight cost with load
 
 world1$forageType <- 'omniscient' #Foraging style for flowers within patch
