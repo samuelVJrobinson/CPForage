@@ -92,7 +92,7 @@
 #'#Constants for foragers
 #'honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
 #'                        v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-#'                        betaVal=0.102, #Reduction of flight speed with load (1-v/v_l)
+#'                        betaVal=0.102/59.5, #Reduction of flight speed with load (v-v_load)/(v*L_max)
 #'                        p_i=1, # Max loading rate (uL/s)
 #'                        h=1.5, #Handling time per flower (s)
 #'                        #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)
@@ -333,7 +333,7 @@ forageMod <- function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncor
   #Calculate patch residence times per forager (in seconds)
   nestSet$base$nests$loadingTime=with(nestSet$base,
                   ifelse(nests$n>0,nests$L*(nests$h+world$S*world$l*nests$p_i+world$f)/world$S*world$l,NA))
-  nestSet$base$nests$travelTime=with(nestSet$base$nests,ifelse(n>0,(d*(2-betaVal*(L/L_max)))/(v*(1-betaVal*(L/L_max))),NA))
+  nestSet$base$nests$travelTime=with(nestSet$base$nests,ifelse(n>0,(d*(2-betaVal*L))/(v*(1-betaVal*L)),NA))
   nestSet$base$nests$boutLength=with(nestSet$base$nests,loadingTime+travelTime+H) #Time for 1 complete foraging bout
 
   if(parallel) {

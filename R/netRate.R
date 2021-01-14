@@ -25,8 +25,8 @@
 #' @export
 #'
 #' @examples
-#'netRate(L=50,L_max=50.5,e=14.35,d=100,v=7.8,
-#'  h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,alphaVal=0.013,betaVal=0.102,S=0.5)
+#'netRate(L=50,L_max=59.5,e=14.35,d=100,v=7.8,
+#'  h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,alphaVal=0.013,betaVal=0.102/59.5,S=0.5)
 netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
   #Rate=(Gains-ForagingLoss-Travel Loss - Hive Loss)/(Travel Time + Foraging Time + Hive Time)
 
@@ -51,13 +51,15 @@ netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
     ForageTimeFlying <- 0
   } else {
     #Energetic losses while flying from flower-to-flower
-    ForageLossFlying <- c_f*f*((S^2*alphaVal*betaVal*(nFlwVis-1)*l^2+2*S^2*alphaVal*betaVal*(nFlwVis-1)^3*l^2+
-              3*S^2*alphaVal*betaVal*(nFlwVis-1)^2*l^2)/(6*L_max)+(S*betaVal*(nFlwVis-1)*l+
-              S*betaVal*(nFlwVis-1)^2*l)/(2*L_max)+(S*alphaVal*(nFlwVis-1)*l+
-              S*alphaVal*(nFlwVis-1)^2*l)/2+nFlwVis-1)
+    ForageLossFlying <- c_f*f*(
+      (2*S^2*alphaVal*betaVal*l^2*(nFlwVis-1)^3+3*S^2*alphaVal*betaVal*l^2*
+         (nFlwVis-1)^2+S^2*alphaVal*betaVal*l^2*(nFlwVis-1))/6+
+        (S*betaVal*l*(nFlwVis-1)^2+S*betaVal*l*(nFlwVis-1))/2+
+        (S*alphaVal*l*(nFlwVis-1)^2+S*alphaVal*l*(nFlwVis-1))/2+
+        nFlwVis-1)
 
     #Time cost of flying flower-to-flower
-    ForageTimeFlying <- f*((S*betaVal*((L/S*l)-1)*l+S*betaVal*((L/S*l)-1)^2*l)/(2*L_max)+(L/S*l)-1)
+    ForageTimeFlying <- f*((S*beta*(nFlwVis-1)*l+S*beta*(nFlwVis-1)^2*l)/2+nFlwVis-1)
   }
 
   ForagingLoss <- ForageLossHandling+ForageLossFlying #Total foraging loss
