@@ -118,7 +118,7 @@ world1$forageType <- 'omniscient' #Foraging style for flowers within patch
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL) - Schmid-Hempel (1987)
                        v=7.8, #Velocity (m/s) - Unloaded flight speed (Wenner 1963)
-                       betaVal=0.102, #Reduction of flight speed with load (1-v/v_l)
+                       betaVal=0.102/59.5, #Reduction of flight speed with load (v-v_load)/(v*L_max)
                        p_i=1, # Max loading rate (uL/s)
                        h=1.5, #Handling time per flower (s)
                        #Unloaded flight energetic cost (J/s) (Dukas and Edelstein Keshet 1998)

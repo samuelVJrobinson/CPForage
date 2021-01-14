@@ -60,9 +60,10 @@ curr <- function(L_i,L_max_i,n_i,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,c_i,c_f,whatCurr
              #Omniscient - all flowers used optimally
              omniscient={
                X <- -(L_i*NumFls*(2*h_i+L_i*beta_i*f_i+2*f_i)*mu*v_i)/
-                 (L_i*(2*L_i*NumFls*mu*p_i*v_i-2*L_i*n_i*v_i-L_i*NumFls*beta_i*
-                       f_i*mu*v_i-2*NumFls*f_i*mu*v_i+2*h_i*NumFls*mu*v_i+
+                 (l*(2*L_i*NumFls*mu*p_i*v_i-2*L_i*n_i*v_i-L_i*NumFls*beta_i*
+                         f_i*mu*v_i-2*NumFls*f_i*mu*v_i+2*H_i*NumFls*mu*v_i+
                          2*L_i*NumFls*beta_i*d_i*mu+4*NumFls*d_i*mu))
+
                ifelse((X<0)|(X>1),1,X) #Sets S to 1 if outside 0-1 range
                },
              #Random - Possingham 1988: 1/(D_lambda*l+1)=S

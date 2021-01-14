@@ -77,7 +77,7 @@ c_i=0.0042,
 c_f=0.05,
 H=100,
 alphaVal=0.013,
-betaVal=0.102)
+betaVal=0.102/59.5)
 
 with(params,getCurr(whatCurr='rat',L,L_max,e,d,v,h,f,
            l,p_i,c_i,c_f,H,betaVal,S=1))

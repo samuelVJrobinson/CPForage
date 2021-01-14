@@ -298,7 +298,7 @@ forageMod <- function(world,nests,iterlim=5000,verbose=FALSE,parallel=FALSE,ncor
     if(moves$move) pastMoves[1,] <- c(which(moves$from),which(moves$to))
 
     #Checks whether past 2 moves are inverses of each other (i.e. back-and-forth transfer)
-    if(with(pastMoves,from[1]==to[2] & from[2]==to[1])){
+    if(!identical(unlist(pastMoves,use.names=FALSE),c(-1,-1,-1,-1)) & with(pastMoves,from[1]==to[2] & from[2]==to[1])){
       stop(c('2 back-and-forth moves occuring in cells:',pastMoves))
     }
 

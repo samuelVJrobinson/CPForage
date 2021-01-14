@@ -27,7 +27,7 @@ world1$f[c(2:11),c(2:11)]<-f_i #Inter-flower flight time world1$patchLev=F
 #Constants for foragers
 honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
                       v=7.8, #Velocity (m/s) - Unloaded flight speed
-                      betaVal=0.102, #Proportion reduction in completely loaded flight speed (1-v/v_l)
+                      betaVal=0.102/59.5, #Proportion reduction in completely loaded flight speed (1-v/v_l)
                       p_i=1, # Max loading rate (uL/s)
                       h=1.5, #Handling time per flower (s)
                       c_f=0.05, #Unloaded flight energetic cost (J/s)
@@ -36,13 +36,13 @@ honeybeeConstants<-list(L_max=59.5, #Max load capacity (uL)
 
 
 #Nest structure (social rate maximizers)
-nests1<-list(xloc=1,yloc=1,n=10000,whatCurr='rat',sol=F,
+nests1<-list(xloc=1,yloc=1,n=1000,whatCurr='rat',sol=F,
                         constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 #Run model in serial
 testOutput1<-forageMod(world1,nests1,2000,verbose=F,parallel=F)
 
 #Nest structure (social efficiency maximizers)
-nests2<-list(xloc=1,yloc=1,n=10000,whatCurr='eff',sol=F,
+nests2<-list(xloc=1,yloc=1,n=1000,whatCurr='eff',sol=F,
              constants=honeybeeConstants,eps=0,steps=c(50,5,1))
 
 testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
@@ -54,12 +54,23 @@ testOutput2<-forageMod(world1,nests2,2000,verbose=F,parallel=F)
 # abline(h=c(0,1),lty='dashed')
 # legend('topright',c('Efficiency','Net Rate'),fill=c('red','black'))
 #
-# plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$n[2:11,2:11]),xlab='Distance',ylab='Count',pch=19,col='red',cex=1.3,main='Forager number')
+# plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$n[2:11,2:11]),xlab='Distance',ylab='Count',pch=19,col='red',cex=1.3,main='Forager number',
+#      ylim=c(0,max(c(testOutput2$nests$n[2:11,2:11],testOutput1$nests$n[2:11,2:11]),na.rm=T)))
 # points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$n[2:11,2:11]),pch=19)
 #
 # plot(diag(testOutput2$nests$d[2:11,2:11]),diag(testOutput2$nests$L[2:11,2:11]),xlab='Distance',ylab='L',pch=19,col='red',cex=1.3,main='Load size',
 #      ylim=c(0,max(c(testOutput2$nests$L,testOutput1$nests$L),na.rm=T)))
 # points(diag(testOutput1$nests$d[2:11,2:11]),diag(testOutput1$nests$L[2:11,2:11]),pch=19)
+#
+# #Heatmaps
+#
+# #NOTE: foragers in netrate simulation "pile up" in nest cell, because total N foragers is very large compared to size of landscape
+# par(mfrow=c(4,2))
+# image(testOutput1$world$S,main='NetRate: S'); image(testOutput2$world$S,main='Eff: S')
+# image(testOutput1$nests$n,main='NetRate: n'); image(testOutput2$nests$n,main='Eff: n')
+# image(testOutput1$nests$L,main='NetRate: L'); image(testOutput2$nests$L,main='Eff: L')
+# image(testOutput1$nests$curr,main='NetRate: curr'); image(testOutput2$nests$curr,main='Eff: curr')
+# par(mfrow=c(1,1))
 
 test_that("Results in expected format",{
   expect_length(testOutput1,2) #Nest and world list
@@ -69,14 +80,14 @@ test_that("Results in expected format",{
 
 test_that("Results are consistent",{
   #World 1
-  expect_equal(testOutput1$world$S[5,5],0.1103465,tol=1e-4) #S-value
-  expect_equal(testOutput1$nests$n[5,5],39) #n
-  expect_equal(testOutput1$nests$L[5,5],28.51164,tol=1e-4) #L
+  expect_equal(testOutput1$world$S[5,5],0.3462,tol=1e-4) #S-value
+  expect_equal(testOutput1$nests$n[5,5],10) #n
+  expect_equal(testOutput1$nests$L[5,5],59.5,tol=1e-4) #L
 
   #World 2
-  expect_equal(testOutput2$world$S[5,5],0.2430017,tol=1e-4) #S-value
-  expect_equal(testOutput2$nests$n[5,5],114) #n
-  expect_equal(testOutput2$nests$L[5,5],0.7119991,tol=1e-4) #L
+  expect_equal(testOutput2$world$S[5,5],0.5309762,tol=1e-4) #S-value
+  expect_equal(testOutput2$nests$n[5,5],11) #n
+  expect_equal(testOutput2$nests$L[5,5],6.498771,tol=1e-4) #L
 })
 
 test_that('forageMod error handling works',{

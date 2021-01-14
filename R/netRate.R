@@ -59,7 +59,7 @@ netRate <- function(L,L_max,e,d,v,h,f,l,p_i,c_i,c_f,H,alphaVal,betaVal,S){
         nFlwVis-1)
 
     #Time cost of flying flower-to-flower
-    ForageTimeFlying <- f*((S*beta*(nFlwVis-1)*l+S*beta*(nFlwVis-1)^2*l)/2+nFlwVis-1)
+    ForageTimeFlying <- f*((S*betaVal*(nFlwVis-1)*l+S*betaVal*(nFlwVis-1)^2*l)/2+nFlwVis-1)
   }
 
   ForagingLoss <- ForageLossHandling+ForageLossFlying #Total foraging loss

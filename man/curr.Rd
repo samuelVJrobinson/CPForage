@@ -87,7 +87,7 @@ Function to calculate currency(-ies) in a given cell. Called by \code{optimLoadC
 #Parameters
 params <- list(L_i=59.5,L_max_i=59.5,n_i=10,h_i=1.5,p_i=1,
            f_i=0.86,d_i=100,v_i=7.8,alphaVal=0.013,
-           beta_i=0.102,H_i=100,c_f=0.05,c_i=0.0042,
+           beta_i=0.102/59.5,H_i=100,c_f=0.05,c_i=0.0042,
            mu=0.3/3600,l=1,e=14.35,NumFls=520*(10^2))
 
 temp1 <- with(params,

@@ -47,6 +47,6 @@ Helper function for getCurr. Returns Net rate of Energy Gain (J/s) for a
 forager in a given cell.
 }
 \examples{
-netRate(L=50,L_max=50.5,e=14.35,d=100,v=7.8,
- h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,alphaVal=0.013,betaVal=0.102,S=0.5)
+netRate(L=50,L_max=59.5,e=14.35,d=100,v=7.8,
+ h=1.5,f=0.86,l=1,p_i=1,c_i=0.0042,c_f=0.05,H=100,alphaVal=0.013,betaVal=0.102/59.5,S=0.5)
 }

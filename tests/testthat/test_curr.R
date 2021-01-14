@@ -8,7 +8,7 @@ params <- list(L_i=59.5,
             f_i=0.86,
             d_i=100, #100m
             v_i=7.8,
-            beta_i=0.102,
+            beta_i=0.102/59.5,
             H_i=100,
             c_f=0.05,
             c_i=0.0042,
@@ -90,14 +90,14 @@ test_that('Individual currency and S-values work properly',{
                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random',alphaVal=alphaVal))
   expect_equal(length(ratRes1),2)
   expect_equal(ratRes1[['S']],0.0104476)
-  expect_equal(ratRes1[['rat']],0.03292918)
+  expect_equal(ratRes1[['rat']],0.03294044)
 
   #Same thing, but 200 foragers
   ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='random',alphaVal=alphaVal))
   expect_equal(length(ratRes2),2)
   expect_equal(ratRes2[['S']],0.0005209168)
-  expect_equal(ratRes2[['rat']],-0.02569164)
+  expect_equal(ratRes2[['rat']],-0.02569135)
 
   #NN foraging:
   #Net rate with 1 nests
@@ -105,28 +105,28 @@ test_that('Individual currency and S-values work properly',{
                         c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='nn',alphaVal=alphaVal))
   expect_equal(length(ratRes1),2)
   expect_equal(ratRes1[['S']],0.0104476)
-  expect_equal(ratRes1[['rat']],0.03292918)
+  expect_equal(ratRes1[['rat']],0.03294044)
 
   #Same thing, but 200 foragers
   ratRes2 <- with(params,curr(L_i,L_max_i,200,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                               c_i,c_f,mu,l,e,NumFls,whatCurr_i='rat',sumAll=F,forageType='nn',alphaVal=alphaVal))
   expect_equal(length(ratRes2),2)
   expect_equal(ratRes2[['S']],0.0005209168)
-  expect_equal(ratRes2[['rat']],-0.02569164)
+  expect_equal(ratRes2[['rat']],-0.02569135)
 
   #NN foraging, but with large numbers of flowers (90000) relative to foragers (3). S should be 1.
   ratRes3 <- with(params,curr(L_i,L_max_i,n_i=3,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                         c_i,c_f,mu,l,e,NumFls=400*15^2,whatCurr_i='rat',sumAll=F,forageType='nn',alphaVal=alphaVal))
   expect_equal(length(ratRes3),2)
   expect_equal(ratRes3[['S']],1)
-  expect_equal(ratRes3[['rat']],2.578423,tol=1e-5)
+  expect_equal(ratRes3[['rat']],2.5889,tol=1e-5)
 
   #However, this should not be true with random foragers. S should be 0.92.
   ratRes4 <- with(params,curr(L_i,L_max_i,n_i=3,h_i,p_i,f_i,d_i,v_i,beta_i,H_i,
                   c_i,c_f,mu,l,e,NumFls=400*15^2,whatCurr_i='rat',sumAll=F,forageType='random',alphaVal=alphaVal))
   expect_equal(length(ratRes4),2)
   expect_equal(ratRes4[['S']],0.9298684)
-  expect_equal(ratRes4[['rat']],2.495546,tol=1e-5)
+  expect_equal(ratRes4[['rat']],2.505374,tol=1e-5)
 })
 
 
